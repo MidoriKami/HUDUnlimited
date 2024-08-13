@@ -351,23 +351,34 @@ public unsafe class ConfigurationWindow() : Window("HUDUnlimited Configuration W
 
         foreach (var node in nodeSpan) {
             if (node.Value is null) continue;
-            if (System.Config.HideInactiveNodes && !node.Value->IsVisible()) continue;
-             
-            if ((uint)node.Value->Type > 1000) {
+            
+            var option = System.Config.Overrides.FirstOrDefault(option => option.NodePath == $"{currentPath}/{node.Value->NodeId}");
+            if (System.Config.HideInactiveNodes && !node.Value->IsVisible() && !(option?.OverrideEnabled ?? false)) continue;
+            
+            var isComponentNode = (uint) node.Value->Type > 1000;
+            
+            if (isComponentNode) {
                 var componentNode = (AtkComponentNode*) node.Value;
 
                 DrawNodeRecursively(ref componentNode->Component->UldManager, $"{currentPath}/{node.Value->NodeId}");
             }
-            else {
-                var cursorPosition = ImGui.GetCursorPos();
-                if (ImGui.Selectable($"##{(nint)node.Value:X}", selectedNode == node.Value, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
-                    selectedNode = node.Value;
-                    selectedNodePath = $"{currentPath}/{node.Value->NodeId}";
-                }
 
-                ImGui.SetCursorPos(cursorPosition);
-                var color = !node.Value->IsVisible() ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
-                ImGui.TextColored(color, node.Value->Type.ToString());
+            var cursorPosition = ImGui.GetCursorPos();
+            if (ImGui.Selectable($"##{(nint)node.Value:X}", selectedNode == node.Value, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
+                selectedNode = node.Value;
+                selectedNodePath = $"{currentPath}/{node.Value->NodeId}";
+            }
+
+            ImGui.SetCursorPos(cursorPosition);
+            var color = !node.Value->IsVisible() ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
+            ImGui.TextColored(color, isComponentNode ? "Component" : node.Value->Type.ToString());
+
+            if (option is not null) {
+                using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+                    var symbolSize = ImGui.CalcTextSize(FontAwesomeIcon.StarHalfAlt.ToIconString());
+                    ImGui.SameLine(ImGui.GetContentRegionAvail().X - symbolSize.X);
+                    ImGui.Text(option.OverrideEnabled ? FontAwesomeIcon.Star.ToIconString() : FontAwesomeIcon.StarHalfAlt.ToIconString());
+                }
             }
         }
     }
