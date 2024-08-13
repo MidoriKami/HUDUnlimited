@@ -140,7 +140,9 @@ public unsafe class ConfigurationWindow() : Window("HUDUnlimited Configuration W
         
         ImGui.SetCursorPos(ImGui.GetContentRegionMax() - buttonSize);
         using (ImRaii.Child("enable_disable_button", ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing)) {
-            if (ImGui.Button(buttonText, buttonSize - ImGui.GetStyle().ItemInnerSpacing)) {
+            var enableDisableSize = new Vector2(buttonSize.X - 64.0f * ImGuiHelpers.GlobalScale - ImGui.GetStyle().ItemInnerSpacing.X, buttonSize.Y - ImGui.GetStyle().ItemInnerSpacing.Y);
+            
+            if (ImGui.Button(buttonText, enableDisableSize)) {
 
                 // Create and enable new option
                 if (option is null) {
@@ -163,6 +165,17 @@ public unsafe class ConfigurationWindow() : Window("HUDUnlimited Configuration W
                         option.OverrideEnabled = true;
                         System.AddonController.EnableOverride(option);
                         System.Config.Save();
+                    }
+                }
+            }
+            
+            ImGui.SameLine();
+            using (ImRaii.Disabled(option is null)) {
+                using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+                    if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), ImGui.GetContentRegionAvail()) && option is not null) {
+                        option.OverrideEnabled = false;
+                        System.AddonController.DisableOverride(option);
+                        System.Config.Overrides.Remove(option);
                     }
                 }
             }
