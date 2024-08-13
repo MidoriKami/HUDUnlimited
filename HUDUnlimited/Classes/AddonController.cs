@@ -109,7 +109,7 @@ public unsafe class AddonController : IDisposable {
                     return null;
                 }
 
-                return GetNodeInner(ref manager, remainingPath[1..]);
+                return GetNodeInner(ref componentNode->Component->UldManager, remainingPath[1..]);
             
             default:
                 Service.PluginLog.Warning("Unable to parse remaining path.");
