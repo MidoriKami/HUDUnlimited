@@ -26,9 +26,13 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
             ActivationPath = "/",
             Delegate = _ => System.ConfigurationWindow.UnCollapseOrToggle(),
         });
+
+        Service.PluginInterface.UiBuilder.OpenConfigUi += System.ConfigurationWindow.UnCollapseOrToggle;
     }
 
     public void Dispose() {
+        Service.PluginInterface.UiBuilder.OpenConfigUi -= System.ConfigurationWindow.UnCollapseOrToggle;
+
         System.CommandManager.Dispose();
         System.AddonController.Dispose();
         System.WindowManager.Dispose();
