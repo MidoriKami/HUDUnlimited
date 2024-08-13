@@ -1,6 +1,7 @@
 ﻿
 using HUDUnlimited.Classes;
 using HUDUnlimited.Windows;
+using KamiLib.CommandManager;
 using KamiLib.Window;
 
 namespace HUDUnlimited;
@@ -12,4 +13,5 @@ public static class System {
 	public static WindowManager WindowManager { get; set; }
 	public static AddonListController AddonListController { get; set; }
 	public static AddonController AddonController { get; set; }
+	public static CommandManager CommandManager { get; set; }
 }
