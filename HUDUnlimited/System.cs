@@ -11,4 +11,5 @@ public static class System {
 	public static ConfigurationWindow ConfigurationWindow { get; set; }
 	public static WindowManager WindowManager { get; set; }
 	public static AddonListController AddonListController { get; set; }
+	public static AddonController AddonController { get; set; }
 }

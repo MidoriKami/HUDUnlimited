@@ -8,4 +8,6 @@ namespace HUDUnlimited;
 public class Service {
     [PluginService] public static IDalamudPluginInterface PluginInterface { get; set; }
     [PluginService] public static IFramework Framework { get; set; }
+    [PluginService] public static IAddonLifecycle AddonLifecycle { get; set; }
+    [PluginService] public static IPluginLog PluginLog { get; set; }
 }

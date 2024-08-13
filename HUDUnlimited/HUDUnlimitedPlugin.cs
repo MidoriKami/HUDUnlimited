@@ -12,6 +12,8 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
         System.Config = Configuration.Load();
 
         System.ConfigurationWindow = new ConfigurationWindow();
+
+        System.AddonController = new AddonController();
         
         System.AddonListController = new AddonListController();
 
@@ -20,6 +22,7 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
     }
 
     public void Dispose() {
+        System.AddonController.Dispose();
         System.WindowManager.Dispose();
         System.AddonListController.Dispose();
     }

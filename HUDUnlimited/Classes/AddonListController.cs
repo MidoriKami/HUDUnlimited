@@ -20,6 +20,10 @@ public unsafe class AddonListController : IDisposable {
     }
     
     private void OnFrameworkUpdate(IFramework framework) {
-        Addons = RaptureAtkUnitManager.Instance()->AllLoadedUnitsList.Entries.ToArray().Where(entry => entry.Value is not null).ToList();
+        Addons = RaptureAtkUnitManager.Instance()
+            ->AllLoadedUnitsList.Entries.ToArray()
+            .Where(entry => entry.Value is not null && entry.Value->IsReady)
+            .Where(entry => !(!entry.Value->IsVisible && System.Config.HideInactiveAddons))
+            .ToList();
     }
 }
