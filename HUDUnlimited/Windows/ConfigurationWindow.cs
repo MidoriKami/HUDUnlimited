@@ -31,6 +31,12 @@ public unsafe class ConfigurationWindow() : Window("HUDUnlimited Configuration W
         ImGui.TableSetupColumn("##node_configuration", ImGuiTableColumnFlags.WidthStretch);
 
         ImGui.TableNextColumn();
+        using (var filterChild = ImRaii.Child("filter_child", new Vector2(ImGui.GetContentRegionAvail().X, 28.0f * ImGuiHelpers.GlobalScale))) {
+            if (filterChild) {
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                ImGui.InputTextWithHint("##filter", "filter...", ref System.AddonListController.Filter, 64, ImGuiInputTextFlags.AutoSelectAll);
+            }
+        }
         using (var addonChild = ImRaii.Child("addon_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding)) {
             if (addonChild) {
                 DrawAddonSelection();
