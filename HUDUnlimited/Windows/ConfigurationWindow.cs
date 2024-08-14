@@ -402,7 +402,9 @@ public unsafe class ConfigurationWindow : Window {
         var viewportSize = ImGui.GetMainViewport().Size;
         var maskColor = ImGui.GetColorU32(KnownColor.Gray.Vector() with { W = 0.80f });
         var borderColor = ImGui.GetColorU32(KnownColor.Red.Vector());
-             
+
+        var nodeScale = GetNodeScale(node, new Vector2(node->GetScaleX(), node->GetScaleY()));
+        
         // Top
         ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, 0.0f), new Vector2(viewportSize.X, node->ScreenY), maskColor);
 
@@ -410,13 +412,13 @@ public unsafe class ConfigurationWindow : Window {
         ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, 0.0f), new Vector2(node->ScreenX, viewportSize.Y), maskColor);
 
         // Right
-        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(node->ScreenX + node->Width * node->ScaleX, 0.0f), new Vector2(viewportSize.X, viewportSize.Y), maskColor);
+        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, 0.0f), new Vector2(viewportSize.X, viewportSize.Y), maskColor);
 
         // Bottom
-        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, node->ScreenY + node->Height * node->ScaleY), new Vector2(viewportSize.X, viewportSize.Y), maskColor);
-             
+        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, node->ScreenY + node->GetHeight() * nodeScale.Y), new Vector2(viewportSize.X, viewportSize.Y), maskColor);
+
         // Border
-        ImGui.GetBackgroundDrawList().AddRect(new Vector2(node->ScreenX, node->ScreenY) - Vector2.One, new Vector2(node->ScreenX + node->Width * node->ScaleX, node->ScreenY + node->Height * node->ScaleY) + Vector2.One, borderColor);
+        ImGui.GetBackgroundDrawList().AddRect(new Vector2(node->ScreenX, node->ScreenY) - Vector2.One, new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, node->ScreenY + node->GetHeight() * nodeScale.Y) + Vector2.One, borderColor);
     }
 
     private bool DrawFlagOption(NodeOverride? option, OverrideFlags flag) {
@@ -436,5 +438,16 @@ public unsafe class ConfigurationWindow : Window {
         }
 
         return false;
+    }
+
+    private Vector2 GetNodeScale(AtkResNode* node, Vector2 currentScale) {
+        if (node->ParentNode is not null) {
+            currentScale.X *= node->ParentNode->GetScaleX();
+            currentScale.Y *= node->ParentNode->GetScaleY();
+
+            return GetNodeScale(node->ParentNode, currentScale);
+        }
+
+        return currentScale;
     }
 }
