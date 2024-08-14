@@ -13,13 +13,15 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
         System.Config = Configuration.Load();
 
         System.ConfigurationWindow = new ConfigurationWindow();
-
+        System.OverrideListWindow = new OverrideListWindow();
+        
         System.AddonController = new AddonController();
         
         System.AddonListController = new AddonListController();
 
         System.WindowManager = new WindowManager(Service.PluginInterface);
-        System.WindowManager.AddWindow(System.ConfigurationWindow);
+        System.WindowManager.AddWindow(System.ConfigurationWindow, WindowFlags.OpenImmediately);
+        System.WindowManager.AddWindow(System.OverrideListWindow, WindowFlags.OpenImmediately);
 
         System.CommandManager = new CommandManager(Service.PluginInterface, "hudu", "hudunlimited");
         System.CommandManager.RegisterCommand(new CommandHandler {

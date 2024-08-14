@@ -14,13 +14,22 @@ using KamiLib.Window;
 
 namespace HUDUnlimited.Windows;
 
-public unsafe class ConfigurationWindow() : Window("HUDUnlimited Configuration Window", new Vector2(800.0f, 600.0f)) {
+public unsafe class ConfigurationWindow : Window {
 
     private AtkUnitBase* selectedAddon;
     private AtkResNode* selectedNode;
     private string selectedNodePath = string.Empty;
 
     private bool locateNode;
+
+    public ConfigurationWindow() : base("HUDUnlimited Configuration Window", new Vector2(800.0f, 600.0f)) {
+        TitleBarButtons.Add(new TitleBarButton {
+            Click = _ => System.OverrideListWindow.UnCollapseOrToggle(),
+            Icon = FontAwesomeIcon.Cog,
+            ShowTooltip = () => ImGui.SetTooltip("Open Override List Window"),
+            IconOffset = new Vector2(2.0f, 1.0f),
+        });
+    }
 
     protected override void DrawContents() {
         using var table = ImRaii.Table("configuration_table", 3, ImGuiTableFlags.Resizable);

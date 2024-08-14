@@ -14,4 +14,5 @@ public static class System {
 	public static AddonListController AddonListController { get; set; }
 	public static AddonController AddonController { get; set; }
 	public static CommandManager CommandManager { get; set; }
+	public static OverrideListWindow OverrideListWindow { get; set; }
 }
