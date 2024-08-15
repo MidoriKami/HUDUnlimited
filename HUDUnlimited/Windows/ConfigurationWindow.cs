@@ -9,10 +9,20 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using HUDUnlimited.Classes;
 using ImGuiNET;
-using KamiLib.Classes;
 using KamiLib.Window;
 
 namespace HUDUnlimited.Windows;
+
+public enum ExtendedNodeType {
+    None = 0,
+    Res = NodeType.Res,
+    Image = NodeType.Image,
+    Text = NodeType.Text,
+    NineGrid = NodeType.NineGrid,
+    Counter = NodeType.Counter,
+    Collision = NodeType.Collision,
+    ClippingMask = NodeType.ClippingMask,
+}
 
 public unsafe class ConfigurationWindow : Window {
 
@@ -21,6 +31,7 @@ public unsafe class ConfigurationWindow : Window {
     private string selectedNodePath = string.Empty;
 
     private bool locateNode;
+    private ExtendedNodeType typeFilter = ExtendedNodeType.None;
 
     public ConfigurationWindow() : base("HUDUnlimited Configuration Window", new Vector2(800.0f, 600.0f)) {
         TitleBarButtons.Add(new TitleBarButton {
@@ -53,6 +64,32 @@ public unsafe class ConfigurationWindow : Window {
         }
 
         ImGui.TableNextColumn();
+        using (var nodeExtrasTable = ImRaii.Table("node_extras_table", 2)) {
+            if (nodeExtrasTable) {
+                ImGui.TableSetupColumn("##typeFilter", ImGuiTableColumnFlags.WidthStretch);
+                ImGui.TableSetupColumn("##locatorButton", ImGuiTableColumnFlags.WidthFixed, 32.0f * ImGuiHelpers.GlobalScale);
+
+                ImGui.TableNextColumn();
+                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+                using (var typeCombo = ImRaii.Combo("##nodeTypeFilter", typeFilter.ToString())) {
+                    if (typeCombo) {
+                        foreach (var enumValue in Enum.GetValues<ExtendedNodeType>()) {
+                            if (ImGui.Selectable(enumValue.ToString(), typeFilter == enumValue)) {
+                                typeFilter = enumValue;
+                            }
+                        }
+                    }
+                }
+
+                ImGui.TableNextColumn();
+                using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+                    if (ImGui.Button(locateNode ? FontAwesomeIcon.EyeSlash.ToIconString() : FontAwesomeIcon.Eye.ToIconString())) { 
+                        locateNode = !locateNode;
+                    }
+                }
+            }
+        }
+        
         using (var nodeChild = ImRaii.Child("node_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding)) {
             if (nodeChild) {
                 DrawNodeSelection();
@@ -145,8 +182,6 @@ public unsafe class ConfigurationWindow : Window {
         ImGuiHelpers.ScaledDummy(10.0f);
         var configChanged = DrawNodeOptions();
 
-        DrawExtraOptions();
-        
         var option = System.Config.Overrides.FirstOrDefault(option => option.NodePath == selectedNodePath);
         var buttonSize = new Vector2(ImGui.GetContentRegionAvail().X, 28.0f * ImGuiHelpers.GlobalScale);
         ImGui.SetCursorPos(ImGui.GetContentRegionMax() - buttonSize);
@@ -161,7 +196,7 @@ public unsafe class ConfigurationWindow : Window {
 
                 // Create and enable new option
                 if (option is null) {
-                    var newOption = new NodeOverride {
+                    var newOption = new OverrideConfig {
                         NodePath = selectedNodePath,
                         OverrideEnabled = true,
                     };
@@ -258,7 +293,7 @@ public unsafe class ConfigurationWindow : Window {
 
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
-        configChanged |= DrawFlagOption(option, OverrideFlags.Position);
+        configChanged |= DrawHelpers.DrawFlagOption(option, OverrideFlags.Position);
 
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!option?.Flags.HasFlag(OverrideFlags.Position) ?? false)) {
@@ -270,7 +305,7 @@ public unsafe class ConfigurationWindow : Window {
             }
         }
 
-        configChanged |= DrawOptionHeader("Scale", option, OverrideFlags.Scale);
+        configChanged |= DrawHelpers.DrawOptionHeader("Scale", option, OverrideFlags.Scale);
 
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!option?.Flags.HasFlag(OverrideFlags.Scale) ?? false)) {
@@ -282,7 +317,7 @@ public unsafe class ConfigurationWindow : Window {
             }
         } 
         
-        configChanged |= DrawOptionHeader("Color", option, OverrideFlags.Color);
+        configChanged |= DrawHelpers.DrawOptionHeader("Color", option, OverrideFlags.Color);
 
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!option?.Flags.HasFlag(OverrideFlags.Color) ?? false)) {
@@ -294,7 +329,7 @@ public unsafe class ConfigurationWindow : Window {
             }
         }
         
-        configChanged |= DrawOptionHeader("Add Color", option, OverrideFlags.AddColor);
+        configChanged |= DrawHelpers.DrawOptionHeader("Add Color", option, OverrideFlags.AddColor);
         
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!option?.Flags.HasFlag(OverrideFlags.AddColor) ?? false)) {
@@ -306,7 +341,7 @@ public unsafe class ConfigurationWindow : Window {
             }
         }
 
-        configChanged |= DrawOptionHeader("Multiply Color", option, OverrideFlags.MultiplyColor);
+        configChanged |= DrawHelpers.DrawOptionHeader("Multiply Color", option, OverrideFlags.MultiplyColor);
 
         ImGui.TableNextColumn();
 
@@ -319,7 +354,7 @@ public unsafe class ConfigurationWindow : Window {
             }
         }
 
-        configChanged |= DrawOptionHeader("Visibility", option, OverrideFlags.Visibility);
+        configChanged |= DrawHelpers.DrawOptionHeader("Visibility", option, OverrideFlags.Visibility);
 
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!option?.Flags.HasFlag(OverrideFlags.Visibility) ?? false)) {
@@ -332,33 +367,6 @@ public unsafe class ConfigurationWindow : Window {
         }
 
         return configChanged;
-    }
-
-    private bool DrawOptionHeader(string label, NodeOverride? option, OverrideFlags flag) {
-        ImGui.TableNextRow(); 
-        ImGui.TableNextColumn();
-        ImGuiHelpers.ScaledDummy(5.0f);
-        
-        ImGui.TableNextRow(); 
-        ImGui.TableNextColumn();
-        ImGui.TableNextColumn();
-        ImGui.Text(label);
-        
-        ImGui.TableNextRow(); 
-        ImGui.TableNextColumn();
-        return DrawFlagOption(option, flag);
-    }
-
-    private void DrawExtraOptions() {
-        if (selectedNode is null) return;
-        
-        ImGuiTweaks.Header("Additional Options");
-
-        using (ImRaii.PushIndent()) {
-            ImGui.Checkbox("Locate Note", ref locateNode);
-        }
-        
-        ImGuiHelpers.ScaledDummy(5.0f);
     }
 
     private void DrawNodeRecursively(ref AtkUldManager uldManager, string currentPath) {
@@ -378,6 +386,10 @@ public unsafe class ConfigurationWindow : Window {
                 DrawNodeRecursively(ref componentNode->Component->UldManager, $"{currentPath}/{node.Value->NodeId}");
             }
 
+            if (typeFilter is not ExtendedNodeType.None) {
+                if (node.Value->Type != (NodeType)typeFilter) continue;
+            }
+            
             var cursorPosition = ImGui.GetCursorPos();
             if (ImGui.Selectable($"##{(nint)node.Value:X}", selectedNode == node.Value, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
                 selectedNode = node.Value;
@@ -403,7 +415,7 @@ public unsafe class ConfigurationWindow : Window {
         var maskColor = ImGui.GetColorU32(KnownColor.Gray.Vector() with { W = 0.80f });
         var borderColor = ImGui.GetColorU32(KnownColor.Red.Vector());
 
-        var nodeScale = GetNodeScale(node, new Vector2(node->GetScaleX(), node->GetScaleY()));
+        var nodeScale = DrawHelpers.GetNodeScale(node, new Vector2(node->GetScaleX(), node->GetScaleY()));
         
         // Top
         ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, 0.0f), new Vector2(viewportSize.X, node->ScreenY), maskColor);
@@ -421,33 +433,7 @@ public unsafe class ConfigurationWindow : Window {
         ImGui.GetBackgroundDrawList().AddRect(new Vector2(node->ScreenX, node->ScreenY) - Vector2.One, new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, node->ScreenY + node->GetHeight() * nodeScale.Y) + Vector2.One, borderColor);
     }
 
-    private bool DrawFlagOption(NodeOverride? option, OverrideFlags flag) {
-        var positionFlag = option?.Flags.HasFlag(flag) ?? false;
-        
-        if (ImGui.Checkbox($"##FlagOption{flag.ToString()}", ref positionFlag)) {
-            if (option is not null) {
-                if (positionFlag) {
-                    option.Flags |= flag;
-                }
-                else {
-                    option.Flags &= ~flag;
-                }
-            }
 
-            return true;
-        }
 
-        return false;
-    }
 
-    private Vector2 GetNodeScale(AtkResNode* node, Vector2 currentScale) {
-        if (node->ParentNode is not null) {
-            currentScale.X *= node->ParentNode->GetScaleX();
-            currentScale.Y *= node->ParentNode->GetScaleY();
-
-            return GetNodeScale(node->ParentNode, currentScale);
-        }
-
-        return currentScale;
-    }
 }

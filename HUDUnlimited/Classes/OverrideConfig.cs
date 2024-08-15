@@ -4,8 +4,10 @@ using System.Text.Json.Serialization;
 
 namespace HUDUnlimited.Classes;
 
-public class NodeOverride {
+public class OverrideConfig {
     public required string NodePath { get; set; }
+
+    public string CustomName = string.Empty;
     
     [JsonIgnore] public string AddonName => NodePath.Split("/")[0];
     
@@ -29,4 +31,5 @@ public enum OverrideFlags {
     AddColor = 1 << 3,
     MultiplyColor = 1 << 4,
     Visibility = 1 << 5,
+    CustomName = 1 << 6,
 }

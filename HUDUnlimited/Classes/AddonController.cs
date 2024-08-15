@@ -21,26 +21,26 @@ public unsafe class AddonController : IDisposable {
         Service.AddonLifecycle.UnregisterListener(OnDrawOverride);
     }
 
-    public void EnableOverride(NodeOverride nodeOverride) {
-        if (!trackedAddons.Any(addon => addon == nodeOverride.AddonName)) {
-            Service.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, nodeOverride.AddonName, OnDrawOverride);
-            Service.PluginLog.Debug($"Registering Listener: {nodeOverride.AddonName}");
-            trackedAddons.Add(nodeOverride.AddonName);
+    public void EnableOverride(OverrideConfig overrideConfig) {
+        if (!trackedAddons.Any(addon => addon == overrideConfig.AddonName)) {
+            Service.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, overrideConfig.AddonName, OnDrawOverride);
+            Service.PluginLog.Debug($"Registering Listener: {overrideConfig.AddonName}");
+            trackedAddons.Add(overrideConfig.AddonName);
         }
         else {
-            Service.PluginLog.Debug($"Listener already active for {nodeOverride.NodePath}");
+            Service.PluginLog.Debug($"Listener already active for {overrideConfig.NodePath}");
         }
     }
 
-    public void DisableOverride(NodeOverride nodeOverride) {
+    public void DisableOverride(OverrideConfig overrideConfig) {
         var anyStillActive = System.Config.Overrides
-            .Where(option => option.AddonName == nodeOverride.AddonName)
+            .Where(option => option.AddonName == overrideConfig.AddonName)
             .Any(option => option.OverrideEnabled);
 
         if (!anyStillActive) {
-            Service.AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, nodeOverride.AddonName, OnDrawOverride);
-            trackedAddons.Remove(nodeOverride.AddonName);
-            Service.PluginLog.Debug($"Unregistering Listener: {nodeOverride.AddonName}");
+            Service.AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, overrideConfig.AddonName, OnDrawOverride);
+            trackedAddons.Remove(overrideConfig.AddonName);
+            Service.PluginLog.Debug($"Unregistering Listener: {overrideConfig.AddonName}");
         }
     }
     
