@@ -218,6 +218,7 @@ public unsafe class ConfigurationWindow : Window {
                         Color = new Vector4(selectedNode->Color.R, selectedNode->Color.G, selectedNode->Color.B, selectedNode->Color.A) / 255.0f,
                         AddColor = new Vector3(selectedNode->AddRed, selectedNode->AddGreen, selectedNode->AddBlue) / 255.0f,
                         MultiplyColor = new Vector3(selectedNode->MultiplyRed, selectedNode->MultiplyGreen, selectedNode->MultiplyBlue) / 100.0f,
+                        Visible = selectedNode->IsVisible(),
                     };
                     
                     System.Config.Overrides.Add(newOption);
