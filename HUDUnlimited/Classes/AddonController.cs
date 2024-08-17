@@ -88,14 +88,14 @@ public unsafe class AddonController : IDisposable {
         }
     }
 
-    private AtkResNode* GetNode(ref AtkUldManager manager, string path) {
+    private static AtkResNode* GetNode(ref AtkUldManager manager, string path) {
         // Omit the addon name, we already matched it to this AtkUldManager
         var nodePath = path.Split("/")[1..];
 
         return GetNodeInner(ref manager, nodePath);
     }
 
-    private AtkResNode* GetNodeInner(ref AtkUldManager manager, string[] remainingPath) {
+    private static AtkResNode* GetNodeInner(ref AtkUldManager manager, string[] remainingPath) {
         switch (remainingPath.Length) {
             // We are at the last step in the path, get the node and return it
             case 1 when uint.TryParse(remainingPath[0], out var index):
