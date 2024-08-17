@@ -54,6 +54,7 @@ public unsafe class AddonController : IDisposable {
             var node = GetNode(ref ((AtkUnitBase*) args.Addon)->UldManager, option.NodePath);
             if (node is null) {
                 Service.PluginLog.Warning($"Failed to find node: {option.NodePath}");
+                continue;
             }
             
             // Apply overrides for this node
