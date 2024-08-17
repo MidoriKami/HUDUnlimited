@@ -17,8 +17,6 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
         
         System.AddonController = new AddonController();
         
-        System.AddonListController = new AddonListController();
-
         System.WindowManager = new WindowManager(Service.PluginInterface);
         System.WindowManager.AddWindow(System.ConfigurationWindow, WindowFlags.OpenImmediately);
         System.WindowManager.AddWindow(System.OverrideListWindow, WindowFlags.OpenImmediately);
@@ -38,6 +36,5 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
         System.CommandManager.Dispose();
         System.AddonController.Dispose();
         System.WindowManager.Dispose();
-        System.AddonListController.Dispose();
     }
 }

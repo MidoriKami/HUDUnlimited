@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using HUDUnlimited.Classes;
@@ -34,6 +36,13 @@ public unsafe class ConfigurationWindow : Window {
     private bool locateNode;
     private ExtendedNodeType typeFilter = ExtendedNodeType.None;
 
+    private string filter = string.Empty;
+    private List<Pointer<AtkUnitBase>> Addons => RaptureAtkUnitManager.Instance()->AllLoadedUnitsList.Entries.ToArray()
+        .Where(entry => entry.Value is not null && entry.Value->IsReady)
+        .Where(entry => !(!entry.Value->IsVisible && System.Config.HideInactiveAddons))
+        .Where(entry => filter == string.Empty || entry.Value->NameString.Contains(filter, StringComparison.OrdinalIgnoreCase))
+        .ToList();
+
     public ConfigurationWindow() : base("HUDUnlimited Configuration Window", new Vector2(800.0f, 600.0f)) {
         TitleBarButtons.Add(new TitleBarButton {
             Click = _ => System.OverrideListWindow.UnCollapseOrToggle(),
@@ -55,7 +64,7 @@ public unsafe class ConfigurationWindow : Window {
         using (var filterChild = ImRaii.Child("filter_child", new Vector2(ImGui.GetContentRegionAvail().X, 28.0f * ImGuiHelpers.GlobalScale))) {
             if (filterChild) {
                 ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                ImGui.InputTextWithHint("##filter", "filter...", ref System.AddonListController.Filter, 64, ImGuiInputTextFlags.AutoSelectAll);
+                ImGui.InputTextWithHint("##filter", "filter...", ref filter, 64, ImGuiInputTextFlags.AutoSelectAll);
             }
         }
         using (var addonChild = ImRaii.Child("addon_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding)) {
@@ -121,7 +130,7 @@ public unsafe class ConfigurationWindow : Window {
                 using var headerHoverColor = ImRaii.PushColor(ImGuiCol.HeaderHovered, ImGui.GetStyle().Colors[(int) ImGuiCol.HeaderHovered] with { W = 0.1f });
                 using var textSelectedColor = ImRaii.PushColor(ImGuiCol.Header, ImGui.GetStyle().Colors[(int) ImGuiCol.Header] with { W = 0.1f });
 
-                ImGuiClip.ClippedDraw(System.AddonListController.Addons, pointer => {
+                ImGuiClip.ClippedDraw(Addons, pointer => {
                     
                     var cursorPosition = ImGui.GetCursorPos();
                     if (ImGui.Selectable($"##{pointer.GetHashCode()}", selectedAddon == pointer.Value, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
