@@ -11,7 +11,7 @@ namespace HUDUnlimited.Classes;
 public class OverrideConfig {
     public required string NodePath { get; set; }
 
-    public string NodeName => $"{NodePath}{(Flags.HasFlag(OverrideFlags.CustomName) ? $" ( {CustomName} )" : string.Empty)}##{NodePath}";
+    public string NodeName => $"{NodePath}{(CustomName != string.Empty ? $" ( {CustomName} )" : string.Empty)}##{NodePath}";
 
     public string CustomName = string.Empty;
     
@@ -60,14 +60,9 @@ public class OverrideConfig {
 
         ImGui.TableNextRow();
         ImGui.TableNextColumn();
-        configChanged |= DrawFlagOption(this, OverrideFlags.CustomName);
-
         ImGui.TableNextColumn();
-        using (ImRaii.Disabled(!Flags.HasFlag(OverrideFlags.CustomName))) {
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGui.InputTextWithHint("##Name", "Custom name", ref CustomName, 64);
-        }
-        
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        configChanged |= ImGui.InputTextWithHint("##Name", NodePath, ref CustomName, 64);
         configChanged |= DrawOptionHeader("Position", this, OverrideFlags.Position);
 
         ImGui.TableNextColumn();
