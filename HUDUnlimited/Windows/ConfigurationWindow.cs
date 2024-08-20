@@ -217,7 +217,8 @@ public unsafe class ConfigurationWindow : Window {
                         Scale = new Vector2(selectedNode->GetScaleX(), selectedNode->GetScaleY()),
                         Color = new Vector4(selectedNode->Color.R, selectedNode->Color.G, selectedNode->Color.B, selectedNode->Color.A) / 255.0f,
                         AddColor = new Vector3(selectedNode->AddRed, selectedNode->AddGreen, selectedNode->AddBlue) / 255.0f,
-                        MultiplyColor = new Vector3(selectedNode->MultiplyRed, selectedNode->MultiplyGreen, selectedNode->MultiplyBlue) / 100.0f,
+                        SubtractColor = Vector3.Zero,
+                        MultiplyColor = new Vector3(selectedNode->MultiplyRed, selectedNode->MultiplyGreen, selectedNode->MultiplyBlue) / 255.0f,
                         Visible = selectedNode->IsVisible(),
                     };
                     

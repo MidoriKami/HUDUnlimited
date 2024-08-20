@@ -69,17 +69,30 @@ public unsafe class AddonController : IDisposable {
             if (option.Flags.HasFlag(OverrideFlags.Color)) {
                 node->Color = option.Color.ToByteColor();
             }
+
+            if (option.Flags.HasFlag(OverrideFlags.AddColor) && option.Flags.HasFlag(OverrideFlags.SubtractColor)) {
+                node->AddRed = (short)( option.AddColor.X * 255.0f - option.SubtractColor.X * 255.0f);
+                node->AddGreen = (short)( option.AddColor.Y * 255.0f - option.SubtractColor.Y * 255.0f );
+                node->AddBlue = (short)( option.AddColor.Z * 255.0f - option.SubtractColor.Z * 255.0f );
+            }
+            else {
+                if (option.Flags.HasFlag(OverrideFlags.AddColor)) {
+                    node->AddRed = (short)( option.AddColor.X * 255.0f );
+                    node->AddGreen = (short)( option.AddColor.Y * 255.0f );
+                    node->AddBlue = (short)( option.AddColor.Z * 255.0f );
+                }
             
-            if (option.Flags.HasFlag(OverrideFlags.AddColor)) {
-                node->AddRed = (short)( option.AddColor.X * 255.0f );
-                node->AddGreen = (short)( option.AddColor.Y * 255.0f );
-                node->AddBlue = (short)( option.AddColor.Z * 255.0f );
+                if (option.Flags.HasFlag(OverrideFlags.SubtractColor)) {
+                    node->AddRed = (short)( -option.SubtractColor.X * 255.0f );
+                    node->AddGreen = (short)( -option.SubtractColor.Y * 255.0f );
+                    node->AddBlue = (short)( -option.SubtractColor.Z * 255.0f );
+                }
             }
             
             if (option.Flags.HasFlag(OverrideFlags.MultiplyColor)) {
-                node->MultiplyRed = (byte)( option.MultiplyColor.X * 100.0f );
-                node->MultiplyGreen = (byte)( option.MultiplyColor.Y * 100.0f );
-                node->MultiplyBlue = (byte)( option.MultiplyColor.Z * 100.0f );
+                node->MultiplyRed = (byte)( option.MultiplyColor.X * 255.0f );
+                node->MultiplyGreen = (byte)( option.MultiplyColor.Y * 255.0f );
+                node->MultiplyBlue = (byte)( option.MultiplyColor.Z * 255.0f );
             }
             
             if (option.Flags.HasFlag(OverrideFlags.Visibility)) {

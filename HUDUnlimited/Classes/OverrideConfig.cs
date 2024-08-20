@@ -23,6 +23,7 @@ public class OverrideConfig {
     public Vector2 Scale = Vector2.One;
     public Vector4 Color = Vector4.One;
     public Vector3 AddColor = Vector3.Zero;
+    public Vector3 SubtractColor = Vector3.Zero;
     public Vector3 MultiplyColor = Vector3.One;
     public bool Visible = true;
     
@@ -94,6 +95,14 @@ public class OverrideConfig {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             configChanged |= ImGui.ColorEdit3("##AddColor", ref AddColor);
         }
+        
+        configChanged |= DrawOptionHeader("Subtract Color", this, OverrideFlags.SubtractColor);
+        
+        ImGui.TableNextColumn();
+        using (ImRaii.Disabled(!Flags.HasFlag(OverrideFlags.SubtractColor))) {
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            configChanged |= ImGui.ColorEdit3("##SubtractColor", ref SubtractColor);
+        }
 
         configChanged |= DrawOptionHeader("Multiply Color", this, OverrideFlags.MultiplyColor);
 
@@ -116,7 +125,7 @@ public class OverrideConfig {
             System.Config.Save();
         }
     }
-    
+
     private static bool DrawOptionHeader(string label, OverrideConfig? option, OverrideFlags flag) {
         ImGui.TableNextRow(); 
         ImGui.TableNextColumn();
@@ -160,5 +169,5 @@ public enum OverrideFlags {
     AddColor = 1 << 3,
     MultiplyColor = 1 << 4,
     Visibility = 1 << 5,
-    CustomName = 1 << 6,
+    SubtractColor = 1 << 6,
 }
