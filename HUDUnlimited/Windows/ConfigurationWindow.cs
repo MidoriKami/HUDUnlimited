@@ -281,7 +281,9 @@ public unsafe class ConfigurationWindow : Window {
             }
         }
 
-        option?.DrawConfig();
+        if (option is { OverrideEnabled: true }) {
+            option.DrawConfig();
+        }
     }
 
     private void DrawNodeRecursively(ref AtkUldManager uldManager, string currentPath) {
