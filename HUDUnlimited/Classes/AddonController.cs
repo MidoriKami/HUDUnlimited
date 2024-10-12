@@ -112,11 +112,11 @@ public unsafe class AddonController : IDisposable {
         switch (remainingPath.Length) {
             // We are at the last step in the path, get the node and return it
             case 1 when uint.TryParse(remainingPath[0], out var index):
-                return manager.SearchNodeById(index);
+                return FindNode(ref manager, index);
 
             // Else we need to keep stepping in
-            case > 1 when uint.TryParse(remainingPath[0], out var index): 
-                var componentNode = (AtkComponentNode*) manager.SearchNodeById(index);
+            case > 1 when uint.TryParse(remainingPath[0], out var index):
+                var componentNode = (AtkComponentNode*) FindNode(ref manager, index);
                 
                 if (componentNode is null) {
                     Service.PluginLog.Warning("Encountered null node when one was expected");
@@ -129,5 +129,16 @@ public unsafe class AddonController : IDisposable {
                 Service.PluginLog.Warning("Unable to parse remaining path.");
                 return null;
         }
+    }
+
+    private static AtkResNode* FindNode(ref AtkUldManager manager, uint nodeId) {
+        for (var i = 0; i < manager.NodeListSize; i++) {
+            var currentNode = manager.NodeList[i];
+            
+            if (currentNode is not null && currentNode->NodeId == nodeId) {
+                return currentNode;
+            }
+        }
+        return null;
     }
 }
