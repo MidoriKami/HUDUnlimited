@@ -348,6 +348,8 @@ public unsafe class ConfigurationWindow : Window {
     }
 
     private void HighlightNode(AtkResNode* node) {
+        if (node is null) return;
+        
         var viewportSize = ImGui.GetMainViewport().Size;
         var maskColor = ImGui.GetColorU32(KnownColor.Gray.Vector() with { W = 0.80f });
         var borderColor = ImGui.GetColorU32(KnownColor.Red.Vector());
