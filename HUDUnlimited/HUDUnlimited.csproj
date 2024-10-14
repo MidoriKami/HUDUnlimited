@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Dalamud.NET.Sdk/10.0.0">
     <PropertyGroup>
-        <AssemblyVersion>1.0.0.1</AssemblyVersion>
+        <AssemblyVersion>1.0.0.2</AssemblyVersion>
         <PackageProjectUrl>https://github.com/MidoriKami/HUDUnlimited.git</PackageProjectUrl>
     </PropertyGroup>
     <ItemGroup>
