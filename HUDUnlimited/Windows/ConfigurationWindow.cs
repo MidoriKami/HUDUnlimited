@@ -298,14 +298,7 @@ public unsafe class ConfigurationWindow : Window {
             
             var isComponentNode = (uint) node.Value->Type > 1000;
             
-            if (isComponentNode) {
-                var componentNode = (AtkComponentNode*) node.Value;
-
-                DrawNodeRecursively(ref componentNode->Component->UldManager, $"{currentPath}/{node.Value->NodeId}");
-            }
-
             switch (typeFilter) {
-
                 case ExtendedNodeType.None:
                     break;
 
@@ -343,6 +336,14 @@ public unsafe class ConfigurationWindow : Window {
                     ImGui.SameLine(ImGui.GetContentRegionAvail().X - symbolSize.X);
                     ImGui.Text(option.OverrideEnabled ? FontAwesomeIcon.Star.ToIconString() : FontAwesomeIcon.StarHalfAlt.ToIconString());
                 }
+            }
+            
+            if (isComponentNode) {
+                ImGui.Indent(5.0f);
+                var componentNode = (AtkComponentNode*) node.Value;
+
+                DrawNodeRecursively(ref componentNode->Component->UldManager, $"{currentPath}/{node.Value->NodeId}");
+                ImGui.Indent(-5.0f);
             }
         }
     }
