@@ -297,53 +297,51 @@ public unsafe class ConfigurationWindow : Window {
             if (System.Config.HideInactiveNodes && !node.Value->IsVisible() && !(option?.OverrideEnabled ?? false)) continue;
             
             var isComponentNode = (uint) node.Value->Type > 1000;
-            
-            switch (typeFilter) {
-                case ExtendedNodeType.None:
-                    break;
+            var nodeType = node.Value->Type;
+            var shouldShow = typeFilter switch {
+                ExtendedNodeType.None => true,
+                ExtendedNodeType.Res when nodeType is NodeType.Res => true,
+                ExtendedNodeType.Image when nodeType is NodeType.Image => true,
+                ExtendedNodeType.Text when nodeType is NodeType.Text => true,
+                ExtendedNodeType.NineGrid when nodeType is NodeType.NineGrid => true,
+                ExtendedNodeType.Counter when nodeType is NodeType.Counter => true,
+                ExtendedNodeType.Collision when nodeType is NodeType.Collision => true,
+                ExtendedNodeType.ClippingMask when nodeType is NodeType.ClippingMask => true,
+                ExtendedNodeType.Component when (int)node.Value->Type > 1000 => true,
+                _ => false,
+            };
 
-                case ExtendedNodeType.Res:
-                case ExtendedNodeType.Image:
-                case ExtendedNodeType.Text:
-                case ExtendedNodeType.NineGrid:
-                case ExtendedNodeType.Counter:
-                case ExtendedNodeType.Collision:
-                case ExtendedNodeType.ClippingMask:
-                    if (node.Value->Type != (NodeType) typeFilter) continue;
-                    break;
+            if (shouldShow) {
+                var cursorPosition = ImGui.GetCursorPos();
+                if (ImGui.Selectable($"##{(nint)node.Value:X}", selectedNode == node.Value, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
+                    selectedNode = node.Value;
+                    selectedNodePath = $"{currentPath}/{node.Value->NodeId}";
+                }
 
-                case ExtendedNodeType.Component:
-                    if ((int) node.Value->Type < 1000) continue;
-                    break;
+                ImGui.SetCursorPos(cursorPosition);
+                var color = !node.Value->IsVisible() ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
+                ImGui.TextColored(color, isComponentNode ? "Component" : node.Value->Type.ToString());
 
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            
-            var cursorPosition = ImGui.GetCursorPos();
-            if (ImGui.Selectable($"##{(nint)node.Value:X}", selectedNode == node.Value, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
-                selectedNode = node.Value;
-                selectedNodePath = $"{currentPath}/{node.Value->NodeId}";
-            }
-
-            ImGui.SetCursorPos(cursorPosition);
-            var color = !node.Value->IsVisible() ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
-            ImGui.TextColored(color, isComponentNode ? "Component" : node.Value->Type.ToString());
-
-            if (option is not null) {
-                using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
-                    var symbolSize = ImGui.CalcTextSize(FontAwesomeIcon.StarHalfAlt.ToIconString());
-                    ImGui.SameLine(ImGui.GetContentRegionAvail().X - symbolSize.X);
-                    ImGui.Text(option.OverrideEnabled ? FontAwesomeIcon.Star.ToIconString() : FontAwesomeIcon.StarHalfAlt.ToIconString());
+                if (option is not null) {
+                    using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+                        var symbolSize = ImGui.CalcTextSize(FontAwesomeIcon.StarHalfAlt.ToIconString());
+                        ImGui.SameLine(ImGui.GetContentRegionAvail().X - symbolSize.X);
+                        ImGui.Text(option.OverrideEnabled ? FontAwesomeIcon.Star.ToIconString() : FontAwesomeIcon.StarHalfAlt.ToIconString());
+                    }
                 }
             }
             
             if (isComponentNode) {
-                ImGui.Indent(5.0f);
+                if (shouldShow) {
+                    ImGui.Indent(5.0f);
+                }
+                
                 var componentNode = (AtkComponentNode*) node.Value;
-
                 DrawNodeRecursively(ref componentNode->Component->UldManager, $"{currentPath}/{node.Value->NodeId}");
-                ImGui.Indent(-5.0f);
+                
+                if (shouldShow) {
+                    ImGui.Indent(-5.0f);
+                }
             }
         }
     }
