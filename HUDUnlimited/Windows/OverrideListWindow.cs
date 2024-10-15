@@ -15,7 +15,7 @@ using KamiLib.Window;
 
 namespace HUDUnlimited.Windows;
 
-public class OverrideListWindow() : Window("Override Browser", new Vector2(600.0f, 600.0f)) {
+public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f, 600.0f)) {
 
     private string selectedAddon = string.Empty;
     private OverrideConfig? selectionConfigOption;

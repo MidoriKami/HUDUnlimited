@@ -47,7 +47,7 @@ public unsafe class ConfigurationWindow : Window {
         TitleBarButtons.Add(new TitleBarButton {
             Click = _ => System.OverrideListWindow.UnCollapseOrToggle(),
             Icon = FontAwesomeIcon.Cog,
-            ShowTooltip = () => ImGui.SetTooltip("Open Override List Window"),
+            ShowTooltip = () => ImGui.SetTooltip("Open Preset Browser"),
             IconOffset = new Vector2(2.0f, 1.0f),
         });
     }
