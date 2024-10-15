@@ -95,6 +95,7 @@ public class OverrideListWindow() : Window("Override Browser", new Vector2(600.0
             foreach (var importedPreset in importedData) {
                 if (System.Config.Overrides.All(existingOption => existingOption.NodePath != importedPreset.NodePath)) {
                     System.Config.Overrides.Add(importedPreset);
+                    System.AddonController.EnableOverride(importedPreset);
                     addedCount++;
                 }
             }
