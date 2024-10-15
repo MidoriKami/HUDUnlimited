@@ -53,7 +53,7 @@ public unsafe class AddonController : IDisposable {
             // Get node to modify for this option
             var node = GetNode(ref ((AtkUnitBase*) args.Addon)->UldManager, option.NodePath);
             if (node is null) {
-                Service.PluginLog.Warning($"Failed to find node: {option.NodePath}");
+                Service.PluginLog.Verbose($"Failed to find node: {option.NodePath}");
                 continue;
             }
             
