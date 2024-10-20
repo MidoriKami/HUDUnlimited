@@ -50,6 +50,13 @@ public unsafe class ConfigurationWindow : Window {
             ShowTooltip = () => ImGui.SetTooltip("Open Preset Browser"),
             IconOffset = new Vector2(2.0f, 1.0f),
         });
+        
+        TitleBarButtons.Add(new TitleBarButton {
+            Click = _ => System.InfoWindow.UnCollapseOrToggle(),
+            Icon = FontAwesomeIcon.InfoCircle,
+            ShowTooltip = () => ImGui.SetTooltip("Open Plugin Help/Info"),
+            IconOffset = new Vector2(2.0f, 1.0f),
+        });
     }
 
     protected override void DrawContents() {

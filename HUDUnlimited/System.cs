@@ -1,4 +1,5 @@
 ﻿
+using System.Net.NetworkInformation;
 using HUDUnlimited.Classes;
 using HUDUnlimited.Windows;
 using KamiLib.CommandManager;
@@ -14,4 +15,5 @@ public static class System {
 	public static AddonController AddonController { get; set; }
 	public static CommandManager CommandManager { get; set; }
 	public static OverrideListWindow OverrideListWindow { get; set; }
+	public static InfoWindow InfoWindow { get; set; }
 }
