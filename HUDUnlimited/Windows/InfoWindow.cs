@@ -50,7 +50,10 @@ public class InfoWindow() : Window("HUDUnlimited Information Window", new Vector
             ImGui.TextWrapped("Finding a component that contains what you want to change is generally a good place to start.");
             
             ImGuiHelpers.ScaledDummy(3.0f);
-            ImGui.TextWrapped("An easy way to see if you have the right part selected is to enable overrides for that part and then toggle the visibility.If the thing you wanted to change disappears, then that's the right part! If it doesn't disappear, delete your override, and try again!");
+            ImGui.TextWrapped("An easy way to see if you have the right part selected is to enable overrides for that part and then toggle the visibility.");
+            
+            ImGuiHelpers.ScaledDummy(3.0f);
+            ImGui.TextWrapped("If the thing you wanted to change disappears, then that's the right part! If it doesn't disappear, delete your override, and try again!");
             
             ImGuiHelpers.ScaledDummy(3.0f);
             ImGui.TextWrapped("If the thing you wanted to change disappears, then that's the right part!");
