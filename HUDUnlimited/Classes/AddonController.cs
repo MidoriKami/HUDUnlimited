@@ -18,12 +18,14 @@ public unsafe class AddonController : IDisposable {
     }
 
     public void Dispose() {
-        Service.AddonLifecycle.UnregisterListener(OnDrawOverride);
+        Service.AddonLifecycle.UnregisterListener(ApplyOverrides);
     }
 
     public void EnableOverride(OverrideConfig overrideConfig) {
         if (!trackedAddons.Any(addon => addon == overrideConfig.AddonName)) {
-            Service.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, overrideConfig.AddonName, OnDrawOverride);
+            Service.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, overrideConfig.AddonName, ApplyOverrides);
+            Service.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, overrideConfig.AddonName, ApplyOverrides);
+            Service.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AddonName, ApplyOverrides);
             Service.PluginLog.Debug($"Registering Listener: {overrideConfig.AddonName}");
             trackedAddons.Add(overrideConfig.AddonName);
         }
@@ -38,13 +40,15 @@ public unsafe class AddonController : IDisposable {
             .Any(option => option.OverrideEnabled);
 
         if (!anyStillActive) {
-            Service.AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, overrideConfig.AddonName, OnDrawOverride);
+            Service.AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, overrideConfig.AddonName, ApplyOverrides);
+            Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRefresh, overrideConfig.AddonName, ApplyOverrides);
+            Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AddonName, ApplyOverrides);
             trackedAddons.Remove(overrideConfig.AddonName);
             Service.PluginLog.Debug($"Unregistering Listener: {overrideConfig.AddonName}");
         }
     }
     
-    private void OnDrawOverride(AddonEvent type, AddonArgs args) {
+    private void ApplyOverrides(AddonEvent type, AddonArgs args) {
         var options = System.Config.Overrides
             .Where(option => option.AddonName == args.AddonName)
             .Where(option => option.OverrideEnabled);
