@@ -1,5 +1,4 @@
-﻿using System.Net.Security;
-using System.Numerics;
+﻿using System.Numerics;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
