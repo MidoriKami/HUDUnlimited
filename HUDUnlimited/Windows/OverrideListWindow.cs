@@ -103,6 +103,8 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
             Service.NotificationManager.AddNotification(new Notification {
                 Type = NotificationType.Info, Content = $"Imported {addedCount} new presets",
             });
+            
+            System.Config.Save();
         }
     }
 
