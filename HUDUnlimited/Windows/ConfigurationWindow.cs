@@ -332,7 +332,7 @@ public unsafe class ConfigurationWindow : Window {
                 if (option is not null) {
                     using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                         var symbolSize = ImGui.CalcTextSize(FontAwesomeIcon.StarHalfAlt.ToIconString());
-                        ImGui.SameLine(ImGui.GetContentRegionAvail().X - symbolSize.X);
+                        ImGui.SameLine(ImGui.GetContentRegionMax().X - symbolSize.X);
                         ImGui.Text(option.OverrideEnabled ? FontAwesomeIcon.Star.ToIconString() : FontAwesomeIcon.StarHalfAlt.ToIconString());
                     }
                 }
