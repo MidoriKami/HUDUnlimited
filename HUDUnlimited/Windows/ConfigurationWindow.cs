@@ -327,7 +327,12 @@ public unsafe class ConfigurationWindow : Window {
 
                 ImGui.SetCursorPos(cursorPosition);
                 var color = !node.Value->IsVisible() ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
-                ImGui.TextColored(color, isComponentNode ? "Component" : node.Value->Type.ToString());
+                if (option is { CustomName: not "" }) {
+                    ImGui.TextColored(color, option.CustomName);  
+                }
+                else {
+                    ImGui.TextColored(color, isComponentNode ? "Component" : node.Value->Type.ToString());  
+                }
 
                 if (option is not null) {
                     using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
