@@ -14,7 +14,7 @@ HUDUnlimited allows you to edit this basic information for **any** User Interfac
 > [!NOTE]  
 > The UI is built with parent elements, and child elements.
 > 
-> For example, moving a parent element will move all the children along with it, as the childrens position is relative to the parent.
+> Moving a parent element will move all the children along with it, as the childrens position is relative to the parent.
 
 ## Importing/Exporting Presets
 
