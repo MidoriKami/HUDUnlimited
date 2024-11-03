@@ -227,6 +227,7 @@ public unsafe class ConfigurationWindow : Window {
                         SubtractColor = Vector3.Zero,
                         MultiplyColor = new Vector3(selectedNode->MultiplyRed, selectedNode->MultiplyGreen, selectedNode->MultiplyBlue) / 255.0f,
                         Visible = selectedNode->IsVisible(),
+                        ProxyParentName = GetProxyNameForSelectedAddon(),
                     };
                     
                     System.Config.Overrides.Add(newOption);
@@ -378,5 +379,17 @@ public unsafe class ConfigurationWindow : Window {
 
         // Border
         ImGui.GetBackgroundDrawList().AddRect(new Vector2(node->ScreenX, node->ScreenY) - Vector2.One, new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, node->ScreenY + node->GetHeight() * nodeScale.Y) + Vector2.One, borderColor);
+    }
+
+    private string? GetProxyNameForSelectedAddon() {
+        if (selectedAddon is null) return null;
+        if (selectedAddon->HostId is not 0) {
+            var proxyAddon = RaptureAtkUnitManager.Instance()->GetAddonById(selectedAddon->HostId);
+            if (proxyAddon is not null) {
+                return proxyAddon->NameString;
+            }
+        }
+
+        return null;
     }
 }
