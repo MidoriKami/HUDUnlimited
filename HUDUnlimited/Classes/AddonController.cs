@@ -4,6 +4,7 @@ using System.Linq;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Utility.Numerics;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace HUDUnlimited.Classes;
@@ -22,35 +23,35 @@ public unsafe class AddonController : IDisposable {
     }
 
     public void EnableOverride(OverrideConfig overrideConfig) {
-        if (!trackedAddons.Any(addon => addon == overrideConfig.AddonName)) {
-            Service.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, overrideConfig.AddonName, ApplyOverrides);
-            Service.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, overrideConfig.AddonName, ApplyOverrides);
-            Service.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AddonName, ApplyOverrides);
-            Service.PluginLog.Debug($"Registering Listener: {overrideConfig.AddonName}");
-            trackedAddons.Add(overrideConfig.AddonName);
+        if (!trackedAddons.Any(addon => addon == overrideConfig.AttachAddonName)) {
+            Service.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
+            Service.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
+            Service.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
+            Service.PluginLog.Debug($"Registering Listener: {overrideConfig.AttachAddonName}");
+            trackedAddons.Add(overrideConfig.AttachAddonName);
         }
         else {
-            Service.PluginLog.Debug($"Listener already active for {overrideConfig.NodePath}");
+            Service.PluginLog.Debug($"Listener already active for {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
         }
     }
 
     public void DisableOverride(OverrideConfig overrideConfig) {
         var anyStillActive = System.Config.Overrides
-            .Where(option => option.AddonName == overrideConfig.AddonName)
+            .Where(option => option.AddonName == overrideConfig.AttachAddonName)
             .Any(option => option.OverrideEnabled);
 
         if (!anyStillActive) {
-            Service.AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, overrideConfig.AddonName, ApplyOverrides);
-            Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRefresh, overrideConfig.AddonName, ApplyOverrides);
-            Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AddonName, ApplyOverrides);
-            trackedAddons.Remove(overrideConfig.AddonName);
-            Service.PluginLog.Debug($"Unregistering Listener: {overrideConfig.AddonName}");
+            Service.AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
+            Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
+            Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
+            trackedAddons.Remove(overrideConfig.AttachAddonName);
+            Service.PluginLog.Debug($"Unregistering Listener: {overrideConfig.AttachAddonName}:{overrideConfig.AttachAddonName}");
         }
     }
     
     private void ApplyOverrides(AddonEvent type, AddonArgs args) {
         var options = System.Config.Overrides
-            .Where(option => option.AddonName == args.AddonName)
+            .Where(option => option.AttachAddonName == args.AddonName)
             .Where(option => option.OverrideEnabled);
 
         foreach (var option in options) {
