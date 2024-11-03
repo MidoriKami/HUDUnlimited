@@ -12,7 +12,7 @@ public class OverrideConfig {
     public required string NodePath { get; set; }
 
     public string NodeName => $"{NodePath}{(CustomName != string.Empty ? $" ( {CustomName} )" : string.Empty)}##{NodePath}";
-    public string? ProxyParentName { get; set; } = null;
+    public string? ProxyParentName { get; set; }
 
     public string CustomName = string.Empty;
     
