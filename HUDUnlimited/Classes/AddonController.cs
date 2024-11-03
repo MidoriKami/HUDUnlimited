@@ -45,7 +45,7 @@ public unsafe class AddonController : IDisposable {
             Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
             Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
             trackedAddons.Remove(overrideConfig.AttachAddonName);
-            Service.PluginLog.Debug($"Unregistering Listener: {overrideConfig.AttachAddonName}:{overrideConfig.AttachAddonName}");
+            Service.PluginLog.Debug($"Unregistering Listener: {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
         }
     }
     
