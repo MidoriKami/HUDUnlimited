@@ -55,8 +55,17 @@ public unsafe class AddonController : IDisposable {
             .Where(option => option.OverrideEnabled);
 
         foreach (var option in options) {
+            // If this option is for an Embedded Addon, and we are being called from the proxyParent. We need to fetch the correct addon.
+            var targetAddon = (AtkUnitBase*)args.Addon;
+            if (option.ProxyParentName is not null) {
+                var proxyAddon = RaptureAtkUnitManager.Instance()->GetAddonByName(option.AddonName);
+                if (proxyAddon is not null) {
+                    targetAddon = proxyAddon;
+                }
+            }
+            
             // Get node to modify for this option
-            var node = GetNode(ref ((AtkUnitBase*) args.Addon)->UldManager, option.NodePath);
+            var node = GetNode(ref targetAddon->UldManager, option.NodePath);
             if (node is null) {
                 Service.PluginLog.Verbose($"Failed to find node: {option.NodePath}");
                 continue;
