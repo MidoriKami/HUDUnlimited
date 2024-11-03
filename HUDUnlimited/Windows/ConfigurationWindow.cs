@@ -231,20 +231,18 @@ public unsafe class ConfigurationWindow : Window {
                     
                     System.Config.Overrides.Add(newOption);
                     System.AddonController.EnableOverride(newOption);
-                    System.Config.Save();
                 }
                 else {
                     if (option.OverrideEnabled) {
                         option.OverrideEnabled = false;
                         System.AddonController.DisableOverride(option);
-                        System.Config.Save();
                     }
                     else {
                         option.OverrideEnabled = true;
                         System.AddonController.EnableOverride(option);
-                        System.Config.Save();
                     }
                 }
+                System.Config.Save();
             }
             
             ImGui.SameLine();
@@ -273,7 +271,6 @@ public unsafe class ConfigurationWindow : Window {
         using (ImRaii.PushColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] with { W = 0.50f })) {
             ImGuiHelpers.CenteredText(selectedNodePath);
         }
-
     }
 
     private void DrawNodeOptions() {
@@ -368,10 +365,10 @@ public unsafe class ConfigurationWindow : Window {
         var nodeScale = DrawHelpers.GetNodeScale(node, new Vector2(node->GetScaleX(), node->GetScaleY()));
         
         // Top
-        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, 0.0f), new Vector2(viewportSize.X, node->ScreenY), maskColor);
+        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, 0.0f), viewportSize with { Y = node->ScreenY }, maskColor);
 
         // Left
-        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, 0.0f), new Vector2(node->ScreenX, viewportSize.Y), maskColor);
+        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, 0.0f), viewportSize with { X = node->ScreenX }, maskColor);
 
         // Right
         ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, 0.0f), new Vector2(viewportSize.X, viewportSize.Y), maskColor);
