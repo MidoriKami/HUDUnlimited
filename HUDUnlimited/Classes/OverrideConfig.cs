@@ -12,10 +12,12 @@ public class OverrideConfig {
     public required string NodePath { get; set; }
 
     public string NodeName => $"{NodePath}{(CustomName != string.Empty ? $" ( {CustomName} )" : string.Empty)}##{NodePath}";
+    public string? ProxyParentName { get; set; } = null;
 
     public string CustomName = string.Empty;
     
     [JsonIgnore] public string AddonName => NodePath.Split("/")[0];
+    [JsonIgnore] public string AttachAddonName => ProxyParentName ?? AddonName;
     
     public bool OverrideEnabled;
     
