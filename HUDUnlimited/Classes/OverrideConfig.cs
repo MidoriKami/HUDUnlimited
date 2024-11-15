@@ -146,6 +146,7 @@ public class OverrideConfig {
     private static bool DrawFlagOption(OverrideConfig? option, OverrideFlags flag) {
         var positionFlag = option?.Flags.HasFlag(flag) ?? false;
         
+        ImGui.SetCursorPosX(5.0f);
         if (ImGui.Checkbox($"##FlagOption{flag.ToString()}", ref positionFlag)) {
             if (option is not null) {
                 if (positionFlag) {
@@ -160,6 +161,22 @@ public class OverrideConfig {
         }
 
         return false;
+    }
+
+    public void CopyTo(OverrideConfig? other) {
+        if (other is null) return;
+        
+        other.ProxyParentName = ProxyParentName;
+        other.CustomName = CustomName;
+        other.OverrideEnabled = OverrideEnabled;
+        other.Position = Position;
+        other.Scale = Scale;
+        other.Color = Color;
+        other.AddColor = AddColor;
+        other.SubtractColor = SubtractColor;
+        other.MultiplyColor = MultiplyColor;
+        other.Visible = Visible;
+        other.Flags = Flags;
     }
 }
 

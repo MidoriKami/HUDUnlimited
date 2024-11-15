@@ -20,10 +20,7 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
     private string selectedAddon = string.Empty;
     private OverrideConfig? selectionConfigOption;
     private readonly List<OverrideConfig> selectedConfigs = []; 
-    
-    private static readonly JsonSerializerOptions SerializerOptions = new() {
-        IncludeFields = true,
-    };
+
     
     protected override void DrawContents() {
         using var table = ImRaii.Table("option_viewer", 2, ImGuiTableFlags.Resizable);
@@ -90,7 +87,7 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
             });
         }
 
-        if (JsonSerializer.Deserialize<List<OverrideConfig>>(uncompressed, SerializerOptions) is { } importedData) {
+        if (JsonSerializer.Deserialize<List<OverrideConfig>>(uncompressed, JsonSettings.SerializerOptions) is { } importedData) {
             var addedCount = 0;
             foreach (var importedPreset in importedData) {
                 if (System.Config.Overrides.All(existingOption => existingOption.NodePath != importedPreset.NodePath)) {
@@ -218,7 +215,7 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
         using var font = Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push();
 
         if (ImGui.Button(FontAwesomeIcon.FileExport.ToIconString(), ImGui.GetContentRegionAvail())) {
-            var jsonString = JsonSerializer.Serialize(selectedConfigs, SerializerOptions);
+            var jsonString = JsonSerializer.Serialize(selectedConfigs, JsonSettings.SerializerOptions);
             var compressed = Util.CompressString(jsonString);
             ImGui.SetClipboardText(Convert.ToBase64String(compressed));
 

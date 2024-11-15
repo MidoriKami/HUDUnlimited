@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using System.Text.Json;
 using Dalamud.Interface;
+using Dalamud.Interface.Components;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
@@ -267,10 +271,75 @@ public unsafe class ConfigurationWindow : Window {
     private void DrawNodeHeader() {
         if (selectedNode is null) return;
         
+        var option = System.Config.Overrides.FirstOrDefault(option => option.NodePath == selectedNodePath);
+        DrawCopyConfigButton(option);
+        
+        ImGui.AlignTextToFramePadding();
         ImGuiHelpers.CenteredText(selectedNode->Type.ToString());
         
+        DrawPasteConfigButton(option);
+
         using (ImRaii.PushColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] with { W = 0.50f })) {
             ImGuiHelpers.CenteredText(selectedNodePath);
+        }
+    }
+    
+    private static void DrawCopyConfigButton(OverrideConfig? option) {
+
+        using (ImRaii.Disabled(option is null)) {
+            ImGui.SetCursorPosX(5.0f);
+            if (ImGuiComponents.IconButton("Copy", FontAwesomeIcon.Copy)) {
+                var jsonString = JsonSerializer.Serialize(option, JsonSettings.SerializerOptions);
+                var compressed = Util.CompressString(jsonString);
+                ImGui.SetClipboardText(Convert.ToBase64String(compressed));
+            }
+            
+            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) {
+                ImGui.SetTooltip("Copy Configuration");
+            }
+            ImGui.SameLine();
+        }
+    }
+
+    private void DrawPasteConfigButton(OverrideConfig? option) {
+        ImGui.SameLine(ImGui.GetContentRegionMax().X - ImGuiHelpers.GetButtonSize("XX").X);
+        
+        if (ImGuiComponents.IconButton("Paste", FontAwesomeIcon.Paste)) {
+            var decodedString = Convert.FromBase64String(ImGui.GetClipboardText());
+            var uncompressed = Util.DecompressString(decodedString);
+
+            if (uncompressed.IsNullOrEmpty()) {
+                Service.NotificationManager.AddNotification(new Notification {
+                    Type = NotificationType.Error, Content = "Unable to Paste Configuration",
+                });
+            }
+
+            if (JsonSerializer.Deserialize<OverrideConfig>(uncompressed, JsonSettings.SerializerOptions) is { } pastedConfiguration) {
+                
+                // Overwrite the node path with the node we are trying to actually update.
+                pastedConfiguration.NodePath = selectedNodePath;
+                
+                // If we don't have an option already, make a new one with the new data
+                if (System.Config.Overrides.All(existingOption => existingOption.NodePath != pastedConfiguration.NodePath)) {
+                    System.Config.Overrides.Add(pastedConfiguration);
+                    System.AddonController.EnableOverride(pastedConfiguration);
+                }
+
+                // If we do already have an option, set the values
+                else {
+                    pastedConfiguration.CopyTo(option);
+                }
+
+                Service.NotificationManager.AddNotification(new Notification {
+                    Type = NotificationType.Info, Content = $"Pasted Configuration: {pastedConfiguration.NodePath}",
+                });
+            
+                System.Config.Save();
+            }
+        }
+
+        if (ImGui.IsItemHovered()) {
+            ImGui.SetTooltip("Paste Configuration");
         }
     }
 
