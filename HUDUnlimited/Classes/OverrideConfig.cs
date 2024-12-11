@@ -58,6 +58,75 @@ public class OverrideConfig {
             }
         }
 
+        configChanged |= DrawCustomNameField();
+        configChanged |= DrawFloat2Option("Position", ref Position, OverrideFlags.Position);
+        configChanged |= DrawFloat2Option("Scale", ref Scale, OverrideFlags.Scale, 0.01f);
+        configChanged |= DrawColor4Option("Color", ref Color, OverrideFlags.Color);
+        configChanged |= DrawColor3Option("Add Color", ref AddColor, OverrideFlags.AddColor);
+        configChanged |= DrawColor3Option("Subtract Color", ref SubtractColor, OverrideFlags.SubtractColor);
+        configChanged |= DrawColor3Option("Multiply Color", ref MultiplyColor, OverrideFlags.MultiplyColor);
+        configChanged |= DrawBoolOption("Visibility", ref Visible, OverrideFlags.Visibility);
+
+        if (configChanged) {
+            System.Config.Save();
+        }
+    }
+
+    private bool DrawBoolOption(string label, ref bool value, OverrideFlags flags) {
+        var configChanged = false;
+        
+        configChanged |= DrawOptionHeader(label, this, flags);
+        
+        ImGui.TableNextColumn();
+        using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            configChanged |= ImGui.Checkbox($"##{label}", ref value);
+        }
+        return configChanged;
+    }
+
+    private bool DrawColor3Option(string label, ref Vector3 color, OverrideFlags flags) {
+        var configChanged = false;
+        
+        configChanged |= DrawOptionHeader(label, this, flags);
+        
+        ImGui.TableNextColumn();
+        using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            configChanged |= ImGui.ColorEdit3($"##{label}", ref color);
+        }
+        return configChanged;
+    }
+
+    private bool DrawColor4Option(string label, ref Vector4 value, OverrideFlags flags) {
+        var configChanged = false;
+        configChanged |= DrawOptionHeader(label, this, flags);
+
+        ImGui.TableNextColumn();
+        using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            configChanged |= ImGui.ColorEdit4($"##{label}", ref value, ImGuiColorEditFlags.AlphaPreviewHalf);
+        }
+        return configChanged;
+    }
+
+    private bool DrawFloat2Option(string label, ref Vector2 option, OverrideFlags flags, float speed = 1.0f) {
+        var configChanged = false;
+        
+        configChanged |= DrawOptionHeader(label, this, flags);
+
+        ImGui.TableNextColumn();
+        using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            configChanged |= ImGui.DragFloat2($"##{label}", ref option, speed);
+        }
+        
+        return configChanged;
+    }
+
+    private bool DrawCustomNameField() {
+        var configChanged = false;
+        
         ImGui.TableNextColumn();
         ImGui.Text("Custom Name");
 
@@ -66,66 +135,7 @@ public class OverrideConfig {
         ImGui.TableNextColumn();
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         configChanged |= ImGui.InputTextWithHint("##Name", NodePath, ref CustomName, 64);
-        configChanged |= DrawOptionHeader("Position", this, OverrideFlags.Position);
-
-        ImGui.TableNextColumn();
-        using (ImRaii.Disabled(!Flags.HasFlag(OverrideFlags.Position))) {
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGui.DragFloat2("##Position", ref Position);
-        } 
-
-        configChanged |= DrawOptionHeader("Scale", this, OverrideFlags.Scale);
-
-        ImGui.TableNextColumn();
-        using (ImRaii.Disabled(!Flags.HasFlag(OverrideFlags.Scale))) {
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGui.DragFloat2("##Scale", ref Scale, 0.01f);
-        } 
-        
-        configChanged |= DrawOptionHeader("Color", this, OverrideFlags.Color);
-
-        ImGui.TableNextColumn();
-        using (ImRaii.Disabled(!Flags.HasFlag(OverrideFlags.Color))) {
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGui.ColorEdit4("##Color", ref Color, ImGuiColorEditFlags.AlphaPreviewHalf);
-        }
-        
-        configChanged |= DrawOptionHeader("Add Color", this, OverrideFlags.AddColor);
-        
-        ImGui.TableNextColumn();
-        using (ImRaii.Disabled(!Flags.HasFlag(OverrideFlags.AddColor))) {
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGui.ColorEdit3("##AddColor", ref AddColor);
-        }
-        
-        configChanged |= DrawOptionHeader("Subtract Color", this, OverrideFlags.SubtractColor);
-        
-        ImGui.TableNextColumn();
-        using (ImRaii.Disabled(!Flags.HasFlag(OverrideFlags.SubtractColor))) {
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGui.ColorEdit3("##SubtractColor", ref SubtractColor);
-        }
-
-        configChanged |= DrawOptionHeader("Multiply Color", this, OverrideFlags.MultiplyColor);
-
-        ImGui.TableNextColumn();
-
-        using (ImRaii.Disabled(!Flags.HasFlag(OverrideFlags.MultiplyColor))) {
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGui.ColorEdit3("##MultiplyColor", ref MultiplyColor);
-        }
-
-        configChanged |= DrawOptionHeader("Visibility", this, OverrideFlags.Visibility);
-
-        ImGui.TableNextColumn();
-        using (ImRaii.Disabled(!Flags.HasFlag(OverrideFlags.Visibility))) {
-            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGui.Checkbox("##Visibility", ref Visible);
-        }
-
-        if (configChanged) {
-            System.Config.Save();
-        }
+        return configChanged;
     }
 
     private static bool DrawOptionHeader(string label, OverrideConfig? option, OverrideFlags flag) {
