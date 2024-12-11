@@ -215,9 +215,13 @@ public unsafe class ConfigurationWindow : Window {
         
         ImGui.SetCursorPos(ImGui.GetContentRegionMax() - buttonSize);
         using (ImRaii.Child("enable_disable_button", ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing)) {
-            var enableDisableSize = new Vector2(buttonSize.X - 64.0f * ImGuiHelpers.GlobalScale - ImGui.GetStyle().ItemInnerSpacing.X, buttonSize.Y - ImGui.GetStyle().ItemInnerSpacing.Y);
+            DrawCopyConfigButton(option);
+            ImGui.SameLine();
             
-            if (ImGui.Button(buttonText, enableDisableSize)) {
+            DrawPasteConfigButton(option);
+            ImGui.SameLine();
+            
+            if (ImGui.Button(buttonText, new Vector2(ImGui.GetContentRegionMax().X * 3.0f / 6.0f, ImGui.GetContentRegionMax().Y))) {
 
                 // Create and enable new option
                 if (option is null) {
@@ -271,24 +275,17 @@ public unsafe class ConfigurationWindow : Window {
     private void DrawNodeHeader() {
         if (selectedNode is null) return;
         
-        var option = System.Config.Overrides.FirstOrDefault(option => option.NodePath == selectedNodePath);
-        DrawCopyConfigButton(option);
-        
         ImGui.AlignTextToFramePadding();
         ImGuiHelpers.CenteredText(selectedNode->Type.ToString());
         
-        DrawPasteConfigButton(option);
-
         using (ImRaii.PushColor(ImGuiCol.Text, ImGui.GetStyle().Colors[(int)ImGuiCol.Text] with { W = 0.50f })) {
             ImGuiHelpers.CenteredText(selectedNodePath);
         }
     }
     
     private static void DrawCopyConfigButton(OverrideConfig? option) {
-
         using (ImRaii.Disabled(option is null)) {
-            ImGui.SetCursorPosX(5.0f);
-            if (ImGuiComponents.IconButton("Copy", FontAwesomeIcon.Copy)) {
+            if (ImGui.Button("Copy", new Vector2(ImGui.GetContentRegionMax().X * 1.0f / 6.0f, ImGui.GetContentRegionMax().Y))) {
                 var jsonString = JsonSerializer.Serialize(option, JsonSettings.SerializerOptions);
                 var compressed = Util.CompressString(jsonString);
                 ImGui.SetClipboardText(Convert.ToBase64String(compressed));
@@ -302,9 +299,7 @@ public unsafe class ConfigurationWindow : Window {
     }
 
     private void DrawPasteConfigButton(OverrideConfig? option) {
-        ImGui.SameLine(ImGui.GetContentRegionMax().X - ImGuiHelpers.GetButtonSize("XX").X);
-        
-        if (ImGuiComponents.IconButton("Paste", FontAwesomeIcon.Paste)) {
+        if (ImGui.Button("Paste", new Vector2(ImGui.GetContentRegionMax().X * 1.0f / 6.0f, ImGui.GetContentRegionMax().Y))) {
             var decodedString = Convert.FromBase64String(ImGui.GetClipboardText());
             var uncompressed = Util.DecompressString(decodedString);
 
@@ -362,6 +357,8 @@ public unsafe class ConfigurationWindow : Window {
     }
 
     private void DrawNodeRecursively(ref AtkUldManager uldManager, string currentPath) {
+        if (uldManager.LoadedState is not AtkLoadState.Loaded) return;
+        
         var nodeSpan = new Span<Pointer<AtkResNode>>(uldManager.NodeList, uldManager.NodeListCount);
 
         foreach (var node in nodeSpan) {
