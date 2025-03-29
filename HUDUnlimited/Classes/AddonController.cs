@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Utility.Numerics;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -53,7 +54,7 @@ public unsafe class AddonController : IDisposable {
         var options = System.Config.Overrides
             .Where(option => option.AttachAddonName == args.AddonName)
             .Where(option => option.OverrideEnabled)
-            .Where(option => !option.Suspended);
+            .Where(option => !option.IsError);
 
         foreach (var option in options) {
             // If this option is for an Embedded Addon, and we are being called from the proxyParent. We need to fetch the correct addon.
@@ -68,10 +69,18 @@ public unsafe class AddonController : IDisposable {
             // Get node to modify for this option
             var node = GetNode(ref targetAddon->UldManager, option.NodePath);
             if (node is null) {
-                Service.PluginLog.Verbose($"Failed to find node: {option.NodePath}, disabling further evaluation ");
+                var logString = $"'{option.NodePath}' is no longer a valid HUDUnlimited configuration', it has been automatically removed.";
+                Service.PluginLog.Warning(logString);
                 
                 // An error occured, don't try to evaluate this node any further.
-                option.Suspended = true;
+                option.OverrideEnabled = false;
+                option.IsError = true;
+
+                Service.NotificationManager.AddNotification(new Notification {
+                    Title = "Invalid HUDUnlimited Configuration",
+                    Content = logString,
+                    Type = NotificationType.Error,
+                });
                 continue;
             }
             
@@ -116,6 +125,12 @@ public unsafe class AddonController : IDisposable {
             if (option.Flags.HasFlag(OverrideFlags.Visibility)) {
                 node->ToggleVisibility(option.Visible);
             }
+        }
+        
+        // Purge Invalid Configurations
+        if (System.Config.Overrides.Any(option => option.IsError)) {
+            System.Config.Overrides.RemoveAll(option => option.IsError);
+            System.Config.Save();
         }
     }
 
