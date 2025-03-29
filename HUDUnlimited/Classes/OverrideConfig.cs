@@ -18,7 +18,8 @@ public class OverrideConfig {
     
     [JsonIgnore] public string AddonName => NodePath.Split("/")[0];
     [JsonIgnore] public string AttachAddonName => ProxyParentName ?? AddonName;
-    
+    [JsonIgnore] public bool Suspended { get; set; }
+
     public bool OverrideEnabled;
     
     public Vector2 Position = Vector2.Zero;

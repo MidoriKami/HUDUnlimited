@@ -52,7 +52,8 @@ public unsafe class AddonController : IDisposable {
     private void ApplyOverrides(AddonEvent type, AddonArgs args) {
         var options = System.Config.Overrides
             .Where(option => option.AttachAddonName == args.AddonName)
-            .Where(option => option.OverrideEnabled);
+            .Where(option => option.OverrideEnabled)
+            .Where(option => !option.Suspended);
 
         foreach (var option in options) {
             // If this option is for an Embedded Addon, and we are being called from the proxyParent. We need to fetch the correct addon.
@@ -67,7 +68,10 @@ public unsafe class AddonController : IDisposable {
             // Get node to modify for this option
             var node = GetNode(ref targetAddon->UldManager, option.NodePath);
             if (node is null) {
-                Service.PluginLog.Verbose($"Failed to find node: {option.NodePath}");
+                Service.PluginLog.Verbose($"Failed to find node: {option.NodePath}, disabling further evaluation ");
+                
+                // An error occured, don't try to evaluate this node any further.
+                option.Suspended = true;
                 continue;
             }
             
@@ -116,6 +120,8 @@ public unsafe class AddonController : IDisposable {
     }
 
     private static AtkResNode* GetNode(ref AtkUldManager manager, string path) {
+        if (manager.LoadedState is not AtkLoadState.Loaded) return null;
+        
         // Omit the addon name, we already matched it to this AtkUldManager
         var nodePath = path.Split("/")[1..];
 
@@ -131,9 +137,14 @@ public unsafe class AddonController : IDisposable {
             // Else we need to keep stepping in
             case > 1 when uint.TryParse(remainingPath[0], out var index):
                 var componentNode = (AtkComponentNode*) FindNode(ref manager, index);
-                
+
                 if (componentNode is null) {
                     Service.PluginLog.Warning("Encountered null node when one was expected");
+                    return null;
+                }
+                
+                if (componentNode->Type < (NodeType) 1000) {
+                    Service.PluginLog.Warning("Encountered regular node when component node was expected");
                     return null;
                 }
 
