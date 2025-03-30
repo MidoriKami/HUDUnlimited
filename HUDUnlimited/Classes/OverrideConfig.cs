@@ -18,7 +18,6 @@ public class OverrideConfig {
     
     [JsonIgnore] public string AddonName => NodePath.Split("/")[0];
     [JsonIgnore] public string AttachAddonName => ProxyParentName ?? AddonName;
-    [JsonIgnore] public bool IsError { get; set; }
 
     public bool OverrideEnabled;
     

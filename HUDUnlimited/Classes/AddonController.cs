@@ -53,8 +53,7 @@ public unsafe class AddonController : IDisposable {
     private void ApplyOverrides(AddonEvent type, AddonArgs args) {
         var options = System.Config.Overrides
             .Where(option => option.AttachAddonName == args.AddonName)
-            .Where(option => option.OverrideEnabled)
-            .Where(option => !option.IsError);
+            .Where(option => option.OverrideEnabled);
 
         foreach (var option in options) {
             // If this option is for an Embedded Addon, and we are being called from the proxyParent. We need to fetch the correct addon.
@@ -69,18 +68,19 @@ public unsafe class AddonController : IDisposable {
             // Get node to modify for this option
             var node = GetNode(ref targetAddon->UldManager, option.NodePath);
             if (node is null) {
-                var logString = $"'{option.NodePath}' is no longer a valid HUDUnlimited configuration', it has been automatically removed.";
+                var logString = $"Error detected, caused by '{option.NodePath}', it has been automatically disabled.";
                 Service.PluginLog.Warning(logString);
+                Service.NotificationManager.AddNotification(new Notification {
+                    Title = "HUDUnlimited detected",
+                    Content = logString,
+                    Type = NotificationType.Error,
+                    Minimized = false,
+                });
                 
                 // An error occured, don't try to evaluate this node any further.
                 option.OverrideEnabled = false;
-                option.IsError = true;
 
-                Service.NotificationManager.AddNotification(new Notification {
-                    Title = "Invalid HUDUnlimited Configuration",
-                    Content = logString,
-                    Type = NotificationType.Error,
-                });
+                System.Config.Save();
                 continue;
             }
             
@@ -125,12 +125,6 @@ public unsafe class AddonController : IDisposable {
             if (option.Flags.HasFlag(OverrideFlags.Visibility)) {
                 node->ToggleVisibility(option.Visible);
             }
-        }
-        
-        // Purge Invalid Configurations
-        if (System.Config.Overrides.Any(option => option.IsError)) {
-            System.Config.Overrides.RemoveAll(option => option.IsError);
-            System.Config.Save();
         }
     }
 
