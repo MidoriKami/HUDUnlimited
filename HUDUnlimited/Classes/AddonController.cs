@@ -58,6 +58,10 @@ public unsafe class AddonController : IDisposable {
         foreach (var option in options) {
             // If this option is for an Embedded Addon, and we are being called from the proxyParent. We need to fetch the correct addon.
             var targetAddon = (AtkUnitBase*)args.Addon;
+            
+            // Check that the addon we want to modify is completely ready yet.
+            if (!targetAddon->IsReady) continue;
+            
             if (option.ProxyParentName is not null) {
                 var proxyAddon = RaptureAtkUnitManager.Instance()->GetAddonByName(option.AddonName);
                 if (proxyAddon is not null) {
