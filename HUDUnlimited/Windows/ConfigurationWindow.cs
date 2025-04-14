@@ -424,7 +424,8 @@ public unsafe class ConfigurationWindow : Window {
 
     private void HighlightNode(AtkResNode* node) {
         if (node is null) return;
-        
+
+        var viewportOffset = ImGui.GetMainViewport().Pos;
         var viewportSize = ImGui.GetMainViewport().Size;
         var maskColor = ImGui.GetColorU32(KnownColor.Gray.Vector() with { W = 0.80f });
         var borderColor = ImGui.GetColorU32(KnownColor.Red.Vector());
@@ -432,19 +433,44 @@ public unsafe class ConfigurationWindow : Window {
         var nodeScale = DrawHelpers.GetNodeScale(node, new Vector2(node->GetScaleX(), node->GetScaleY()));
         
         // Top
-        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, 0.0f), viewportSize with { Y = node->ScreenY }, maskColor);
+        ImGui.GetBackgroundDrawList()
+            .AddRectFilled(
+                    new Vector2(0.0f, 0.0f) + viewportOffset, 
+                    viewportSize with { Y = node->ScreenY } + viewportOffset, 
+                    maskColor
+                );
 
         // Left
-        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, 0.0f), viewportSize with { X = node->ScreenX }, maskColor);
+        ImGui.GetBackgroundDrawList()
+            .AddRectFilled(
+                    new Vector2(0.0f, 0.0f) + viewportOffset, 
+                    viewportSize with { X = node->ScreenX } + viewportOffset, 
+                    maskColor
+                );
 
         // Right
-        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, 0.0f), new Vector2(viewportSize.X, viewportSize.Y), maskColor);
+        ImGui.GetBackgroundDrawList()
+            .AddRectFilled(
+                    new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, 0.0f) + viewportOffset, 
+                    new Vector2(viewportSize.X, viewportSize.Y) + viewportOffset, 
+                    maskColor
+                );
 
         // Bottom
-        ImGui.GetBackgroundDrawList().AddRectFilled(new Vector2(0.0f, node->ScreenY + node->GetHeight() * nodeScale.Y), new Vector2(viewportSize.X, viewportSize.Y), maskColor);
+        ImGui.GetBackgroundDrawList()
+            .AddRectFilled(
+                    new Vector2(0.0f, node->ScreenY + node->GetHeight() * nodeScale.Y) + viewportOffset, 
+                    new Vector2(viewportSize.X, viewportSize.Y) + viewportOffset, 
+                    maskColor
+                );
 
         // Border
-        ImGui.GetBackgroundDrawList().AddRect(new Vector2(node->ScreenX, node->ScreenY) - Vector2.One, new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, node->ScreenY + node->GetHeight() * nodeScale.Y) + Vector2.One, borderColor);
+        ImGui.GetBackgroundDrawList()
+            .AddRect(
+                    new Vector2(node->ScreenX, node->ScreenY) - Vector2.One + viewportOffset, 
+                    new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, node->ScreenY + node->GetHeight() * nodeScale.Y) + Vector2.One + viewportOffset, 
+                    borderColor
+                );
     }
 
     private string? GetProxyNameForSelectedAddon() {
