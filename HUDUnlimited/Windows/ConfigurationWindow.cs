@@ -46,7 +46,7 @@ public unsafe class ConfigurationWindow : Window {
         .Where(entry => filter == string.Empty || entry.Value->NameString.Contains(filter, StringComparison.OrdinalIgnoreCase))
         .ToList();
 
-    public ConfigurationWindow() : base("HUDUnlimited Configuration Window", new Vector2(800.0f, 600.0f)) {
+    public ConfigurationWindow() : base("HUDUnlimited Configuration Window", new Vector2(900.0f, 500.0f)) {
         TitleBarButtons.Add(new TitleBarButton {
             Click = _ => System.OverrideListWindow.UnCollapseOrToggle(),
             Icon = FontAwesomeIcon.Cog,
@@ -76,7 +76,6 @@ public unsafe class ConfigurationWindow : Window {
 
         ImGui.TableNextColumn();
         DrawNodeExtrasTable();
-        
         DrawNodeSelectionChild();
         
         ImGui.TableNextColumn();
@@ -180,7 +179,7 @@ public unsafe class ConfigurationWindow : Window {
     }
 
     private static void DrawAddonSelectionShowHideButton() {
-        using var selectionListButtonChild = ImRaii.Child("addon_selection_list_button", ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing);
+        using var selectionListButtonChild = ImRaii.Child("addon_selection_list_button", ImGui.GetContentRegionAvail());
         if (!selectionListButtonChild) return;
         var text = System.Config.HideInactiveAddons ? "Show Inactive" : "Hide Inactive";
      
@@ -213,7 +212,7 @@ public unsafe class ConfigurationWindow : Window {
     }
 
     private static void DrawNodeSelectionShowHideButton() {
-        using var selectionListButtonChild = ImRaii.Child("node_selection_list_button", ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing);
+        using var selectionListButtonChild = ImRaii.Child("node_selection_list_button", ImGui.GetContentRegionAvail());
         if (!selectionListButtonChild) return;
         
         var text = System.Config.HideInactiveNodes ? "Show Inactive" : "Hide Inactive";
@@ -240,61 +239,66 @@ public unsafe class ConfigurationWindow : Window {
         var buttonText = option?.OverrideEnabled ?? false ? "Disable Overrides" : "Enable Overrides";
         
         ImGui.SetCursorPos(ImGui.GetContentRegionMax() - buttonSize);
-        using (ImRaii.Child("enable_disable_button", ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing)) {
-            DrawCopyConfigButton(option);
-            ImGui.SameLine();
-            
-            DrawPasteConfigButton(option);
-            ImGui.SameLine();
-            
-            if (ImGui.Button(buttonText, new Vector2(ImGui.GetContentRegionMax().X * 3.0f / 6.0f, ImGui.GetContentRegionMax().Y))) {
-
-                // Create and enable new option
-                if (option is null) {
-                    var newOption = new OverrideConfig {
-                        NodePath = selectedNodePath,
-                        OverrideEnabled = true,
-                        Position = new Vector2(selectedNode->GetXFloat(), selectedNode->GetYFloat()),
-                        Scale = new Vector2(selectedNode->GetScaleX(), selectedNode->GetScaleY()),
-                        Color = new Vector4(selectedNode->Color.R, selectedNode->Color.G, selectedNode->Color.B, selectedNode->Color.A) / 255.0f,
-                        AddColor = new Vector3(selectedNode->AddRed, selectedNode->AddGreen, selectedNode->AddBlue) / 255.0f,
-                        SubtractColor = Vector3.Zero,
-                        MultiplyColor = new Vector3(selectedNode->MultiplyRed, selectedNode->MultiplyGreen, selectedNode->MultiplyBlue) / 255.0f,
-                        Visible = selectedNode->IsVisible(),
-                        ProxyParentName = GetProxyNameForSelectedAddon(),
-                    };
-                    
-                    System.Config.Overrides.Add(newOption);
-                    System.AddonController.EnableOverride(newOption);
-                }
-                else {
-                    if (option.OverrideEnabled) {
-                        option.OverrideEnabled = false;
-                        System.AddonController.DisableOverride(option);
-                    }
-                    else {
-                        option.OverrideEnabled = true;
-                        System.AddonController.EnableOverride(option);
-                    }
-                }
-                System.Config.Save();
-            }
-            
-            ImGui.SameLine();
-            using (ImRaii.Disabled(option is null)) {
-                using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
-                    if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), ImGui.GetContentRegionAvail()) && option is not null) {
-                        option.OverrideEnabled = false;
-                        System.AddonController.DisableOverride(option);
-                        System.Config.Overrides.Remove(option);
-                        System.Config.Save();
-                    }
-                }
-            }
-        }
+        DrawEnableDisableChild(option, buttonText);
         
         if (locateNode) {
             HighlightNode(selectedNode);
+        }
+    }
+
+    private void DrawEnableDisableChild(OverrideConfig? option, string buttonText) {
+        using var buttonChild = ImRaii.Child("enable_disable_button", ImGui.GetContentRegionAvail());
+        if (!buttonChild) return;
+
+        DrawCopyConfigButton(option);
+        ImGui.SameLine();
+                
+        DrawPasteConfigButton(option);
+        ImGui.SameLine();
+                
+        if (ImGui.Button(buttonText, new Vector2(ImGui.GetContentRegionMax().X * 3.0f / 6.0f, ImGui.GetContentRegionMax().Y))) {
+
+            // Create and enable new option
+            if (option is null) {
+                var newOption = new OverrideConfig {
+                    NodePath = selectedNodePath,
+                    OverrideEnabled = true,
+                    Position = new Vector2(selectedNode->GetXFloat(), selectedNode->GetYFloat()),
+                    Scale = new Vector2(selectedNode->GetScaleX(), selectedNode->GetScaleY()),
+                    Color = new Vector4(selectedNode->Color.R, selectedNode->Color.G, selectedNode->Color.B, selectedNode->Color.A) / 255.0f,
+                    AddColor = new Vector3(selectedNode->AddRed, selectedNode->AddGreen, selectedNode->AddBlue) / 255.0f,
+                    SubtractColor = Vector3.Zero,
+                    MultiplyColor = new Vector3(selectedNode->MultiplyRed, selectedNode->MultiplyGreen, selectedNode->MultiplyBlue) / 255.0f,
+                    Visible = selectedNode->IsVisible(),
+                    ProxyParentName = GetProxyNameForSelectedAddon(),
+                };
+                        
+                System.Config.Overrides.Add(newOption);
+                System.AddonController.EnableOverride(newOption);
+            }
+            else {
+                if (option.OverrideEnabled) {
+                    option.OverrideEnabled = false;
+                    System.AddonController.DisableOverride(option);
+                }
+                else {
+                    option.OverrideEnabled = true;
+                    System.AddonController.EnableOverride(option);
+                }
+            }
+            System.Config.Save();
+        }
+                
+        ImGui.SameLine();
+        using (ImRaii.Disabled(option is null)) {
+            using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+                if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), ImGui.GetContentRegionAvail()) && option is not null) {
+                    option.OverrideEnabled = false;
+                    System.AddonController.DisableOverride(option);
+                    System.Config.Overrides.Remove(option);
+                    System.Config.Save();
+                }
+            }
         }
     }
 
@@ -365,6 +369,9 @@ public unsafe class ConfigurationWindow : Window {
     }
 
     private void DrawNodeOptions() {
+        using var child = ImRaii.Child("node_options_child", new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetContentRegionAvail().Y - 28.0f * ImGuiHelpers.GlobalScale));
+        if (!child) return;
+        
         if (selectedNode is null) return;
         var option = System.Config.Overrides.FirstOrDefault(option => option.NodePath == selectedNodePath);
 
