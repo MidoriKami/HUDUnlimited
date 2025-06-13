@@ -113,6 +113,34 @@ public unsafe class AddonController : IDisposable {
             if (option.Flags.HasFlag(OverrideFlags.Visibility)) {
                 node->ToggleVisibility(option.Visible);
             }
+
+            if ((option.IsTextNode ?? false) && node->GetNodeType() is NodeType.Text) {
+                var textNode = (AtkTextNode*) node;
+                
+                if (option.Flags.HasFlag(OverrideFlags.TextColor)) {
+                    textNode->TextColor = option.TextColor.ToByteColor();
+                }
+
+                if (option.Flags.HasFlag(OverrideFlags.TextOutlineColor)) {
+                    textNode->EdgeColor = option.TextOutlineColor.ToByteColor();
+                }
+
+                if (option.Flags.HasFlag(OverrideFlags.TextBackgroundColor)) {
+                    textNode->BackgroundColor = option.TextBackgroundColor.ToByteColor();
+                }
+
+                if (option.Flags.HasFlag(OverrideFlags.FontSize)) {
+                    textNode->FontSize = (byte) option.FontSize;
+                }
+
+                if (option.Flags.HasFlag(OverrideFlags.FontType)) {
+                    textNode->FontType = option.FontType;
+                }
+
+                if (option.Flags.HasFlag(OverrideFlags.AlignmentType)) {
+                    textNode->AlignmentFontType = (byte) option.AlignmentType;
+                }
+            }
         }
     }
 

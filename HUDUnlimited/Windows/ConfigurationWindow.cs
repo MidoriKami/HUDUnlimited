@@ -14,6 +14,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using HUDUnlimited.Classes;
 using ImGuiNET;
+using KamiLib.Extensions;
 using KamiLib.Window;
 
 namespace HUDUnlimited.Windows;
@@ -265,13 +266,25 @@ public unsafe class ConfigurationWindow : Window {
                     OverrideEnabled = true,
                     Position = new Vector2(selectedNode->GetXFloat(), selectedNode->GetYFloat()),
                     Scale = new Vector2(selectedNode->GetScaleX(), selectedNode->GetScaleY()),
-                    Color = new Vector4(selectedNode->Color.R, selectedNode->Color.G, selectedNode->Color.B, selectedNode->Color.A) / 255.0f,
+                    Color = selectedNode->Color.ToVector4(),
                     AddColor = new Vector3(selectedNode->AddRed, selectedNode->AddGreen, selectedNode->AddBlue) / 255.0f,
                     SubtractColor = Vector3.Zero,
                     MultiplyColor = new Vector3(selectedNode->MultiplyRed, selectedNode->MultiplyGreen, selectedNode->MultiplyBlue) / 255.0f,
                     Visible = selectedNode->IsVisible(),
                     ProxyParentName = GetProxyNameForSelectedAddon(),
                 };
+
+                if (selectedNode is not null && selectedNode->GetNodeType() is NodeType.Text) {
+                    var textNode = (AtkTextNode*) selectedNode;
+                    
+                    newOption.IsTextNode = true;
+                    newOption.TextColor = textNode->TextColor.ToVector4();
+                    newOption.TextOutlineColor = textNode->EdgeColor.ToVector4();
+                    newOption.TextBackgroundColor = textNode->BackgroundColor.ToVector4();
+                    newOption.FontSize = textNode->FontSize;
+                    newOption.FontType = textNode->FontType;
+                    newOption.AlignmentType = textNode->AlignmentType;
+                }
                         
                 System.Config.Overrides.Add(newOption);
                 System.AddonController.EnableOverride(newOption);
@@ -381,6 +394,24 @@ public unsafe class ConfigurationWindow : Window {
                 ImGuiHelpers.CenteredText("Editing is currently Disabled");
                 ImGuiHelpers.ScaledDummy(10.0f);
                 ImGuiHelpers.CenteredText("Enable Overrides for this Node to configure");
+            }
+        }
+
+        // Text node features are newer than other features, if IsTextNode is null,
+        // then we need to update the text node properties
+        if (option is not null && option.IsTextNode is null) {
+            var isTextNode = selectedNode->GetNodeType() is NodeType.Text;
+            
+            option.IsTextNode = isTextNode;
+            if (isTextNode) {
+                var textNode = (AtkTextNode*) selectedNode;
+                option.TextColor = textNode->TextColor.ToVector4();
+                option.TextOutlineColor = textNode->EdgeColor.ToVector4();
+                option.TextBackgroundColor = textNode->BackgroundColor.ToVector4();
+                option.FontSize = textNode->FontSize;
+                option.FontType = textNode->FontType;
+                option.AlignmentType = textNode->AlignmentType;
+                System.Config.Save();
             }
         }
 

@@ -4,7 +4,9 @@ using System.Text.Json.Serialization;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using KamiLib.Classes;
 
 namespace HUDUnlimited.Classes;
 
@@ -31,6 +33,14 @@ public class OverrideConfig {
     
     public OverrideFlags Flags;
 
+    public bool? IsTextNode = false;
+    public Vector4 TextColor = Vector4.One;
+    public Vector4 TextOutlineColor = Vector4.One;
+    public Vector4 TextBackgroundColor = Vector4.One;
+    public int FontSize = 12;
+    public FontType FontType = FontType.Axis;
+    public AlignmentType AlignmentType = AlignmentType.Left;
+    
     public void DrawConfig() {
         using var disabled = ImRaii.Disabled(!OverrideEnabled);
 
@@ -67,9 +77,26 @@ public class OverrideConfig {
         configChanged |= DrawColor3Option("Multiply Color", ref MultiplyColor, OverrideFlags.MultiplyColor);
         configChanged |= DrawBoolOption("Visibility", ref Visible, OverrideFlags.Visibility);
 
+        if (IsTextNode ?? false) {
+            configChanged |= DrawTextNodeConfig();
+        }
+
         if (configChanged) {
             System.Config.Save();
         }
+    }
+
+    private bool DrawTextNodeConfig() {
+        var configChanged = false;
+        
+        configChanged |= DrawColor4Option("Text Color", ref TextColor, OverrideFlags.TextColor);
+        configChanged |= DrawColor4Option("Text Outline Color", ref TextOutlineColor, OverrideFlags.TextOutlineColor);
+        configChanged |= DrawColor4Option("Text Background Color", ref TextBackgroundColor, OverrideFlags.TextBackgroundColor);
+        configChanged |= DrawIntOption("Font Size", ref FontSize, OverrideFlags.FontSize);
+        configChanged |= DrawEnumOption("Font Type", ref FontType, OverrideFlags.FontType);
+        configChanged |= DrawEnumOption("Alignment Type", ref AlignmentType, OverrideFlags.AlignmentType);
+
+        return configChanged;
     }
 
     private bool DrawBoolOption(string label, ref bool value, OverrideFlags flags) {
@@ -116,6 +143,32 @@ public class OverrideConfig {
         using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             configChanged |= ImGui.DragFloat2($"##{label}", ref option, speed);
+        }
+        
+        return configChanged;
+    }
+
+    private bool DrawIntOption(string label, ref int option, OverrideFlags flags) {
+        var configChanged = false;
+        configChanged |= DrawOptionHeader(label, this, flags);
+
+        ImGui.TableNextColumn();
+        using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            configChanged |= ImGui.InputInt($"##{label}", ref option, 0, 0);
+        }
+        
+        return configChanged;
+    }
+
+    private bool DrawEnumOption<T>(string label, ref T option, OverrideFlags flags) where T : Enum {
+        var configChanged = false;
+        configChanged |= DrawOptionHeader(label, this, flags);
+
+        ImGui.TableNextColumn();
+        using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            configChanged |= ImGuiTweaks.EnumCombo(label, ref option);
         }
         
         return configChanged;
@@ -184,6 +237,12 @@ public class OverrideConfig {
         other.MultiplyColor = MultiplyColor;
         other.Visible = Visible;
         other.Flags = Flags;
+        other.TextColor = TextColor;
+        other.TextOutlineColor = TextOutlineColor;
+        other.TextBackgroundColor = TextBackgroundColor;
+        other.FontSize = FontSize;
+        other.FontType = FontType;
+        other.AlignmentType =  AlignmentType;
     }
 }
 
@@ -196,4 +255,10 @@ public enum OverrideFlags {
     MultiplyColor = 1 << 4,
     Visibility = 1 << 5,
     SubtractColor = 1 << 6,
+    TextColor = 1 << 7,
+    TextOutlineColor = 1 << 8,
+    TextBackgroundColor = 1 << 9,
+    FontSize = 1 << 10,
+    FontType = 1 << 11,
+    AlignmentType  = 1 << 12,
 }
