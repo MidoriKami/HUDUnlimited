@@ -71,22 +71,7 @@ public unsafe class AddonController : IDisposable {
             
             // Get node to modify for this option
             var node = GetNode(ref targetAddon->UldManager, option.NodePath);
-            if (node is null) {
-                var logString = $"Error detected, caused by '{option.NodePath}', it has been automatically disabled.";
-                Service.PluginLog.Warning(logString);
-                Service.NotificationManager.AddNotification(new Notification {
-                    Title = "HUDUnlimited detected",
-                    Content = logString,
-                    Type = NotificationType.Error,
-                    Minimized = false,
-                });
-                
-                // An error occured, don't try to evaluate this node any further.
-                option.OverrideEnabled = false;
-
-                System.Config.Save();
-                continue;
-            }
+            if (node is null) continue;
             
             // Apply overrides for this node
             if (option.Flags.HasFlag(OverrideFlags.Position)) {
