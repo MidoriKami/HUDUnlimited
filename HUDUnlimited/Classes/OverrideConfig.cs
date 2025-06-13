@@ -74,7 +74,6 @@ public class OverrideConfig {
 
     private bool DrawBoolOption(string label, ref bool value, OverrideFlags flags) {
         var configChanged = false;
-        
         configChanged |= DrawOptionHeader(label, this, flags);
         
         ImGui.TableNextColumn();
@@ -87,7 +86,6 @@ public class OverrideConfig {
 
     private bool DrawColor3Option(string label, ref Vector3 color, OverrideFlags flags) {
         var configChanged = false;
-        
         configChanged |= DrawOptionHeader(label, this, flags);
         
         ImGui.TableNextColumn();
@@ -112,7 +110,6 @@ public class OverrideConfig {
 
     private bool DrawFloat2Option(string label, ref Vector2 option, OverrideFlags flags, float speed = 1.0f) {
         var configChanged = false;
-        
         configChanged |= DrawOptionHeader(label, this, flags);
 
         ImGui.TableNextColumn();
