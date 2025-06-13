@@ -5,7 +5,6 @@ using System.Linq;
 using System.Numerics;
 using System.Text.Json;
 using Dalamud.Interface;
-using Dalamud.Interface.Components;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
@@ -72,61 +71,79 @@ public unsafe class ConfigurationWindow : Window {
         ImGui.TableSetupColumn("##node_configuration", ImGuiTableColumnFlags.WidthStretch);
 
         ImGui.TableNextColumn();
-        using (var filterChild = ImRaii.Child("filter_child", new Vector2(ImGui.GetContentRegionAvail().X, 28.0f * ImGuiHelpers.GlobalScale))) {
-            if (filterChild) {
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                ImGui.InputTextWithHint("##filter", "filter...", ref filter, 64, ImGuiInputTextFlags.AutoSelectAll);
-            }
-        }
-        using (var addonChild = ImRaii.Child("addon_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding)) {
-            if (addonChild) {
-                DrawAddonSelection();
-            }
-        }
+        DrawAddonNameFilter();
+        DrawAddonSelectionChild();
 
         ImGui.TableNextColumn();
-        using (var nodeExtrasTable = ImRaii.Table("node_extras_table", 2)) {
-            if (nodeExtrasTable) {
-                ImGui.TableSetupColumn("##typeFilter", ImGuiTableColumnFlags.WidthStretch);
-                ImGui.TableSetupColumn("##locatorButton", ImGuiTableColumnFlags.WidthFixed, 32.0f * ImGuiHelpers.GlobalScale);
-
-                ImGui.TableNextColumn();
-                ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-                using (var typeCombo = ImRaii.Combo("##nodeTypeFilter", typeFilter.ToString(), ImGuiComboFlags.HeightLarge)) {
-                    if (typeCombo) {
-                        foreach (var enumValue in Enum.GetValues<ExtendedNodeType>()) {
-                            if (ImGui.Selectable(enumValue.ToString(), typeFilter == enumValue)) {
-                                typeFilter = enumValue;
-                            }
-                        }
-                    }
-                }
-
-                ImGui.TableNextColumn();
-                using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
-                    if (ImGui.Button(locateNode ? FontAwesomeIcon.EyeSlash.ToIconString() : FontAwesomeIcon.Eye.ToIconString())) { 
-                        locateNode = !locateNode;
-                    }
-                }
-
-                if (ImGui.IsItemHovered()) {
-                    ImGui.SetTooltip(locateNode ? "Hide Node Locator" : "Show Node Locator");
-                }
-            }
-        }
+        DrawNodeExtrasTable();
         
-        using (var nodeChild = ImRaii.Child("node_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding)) {
-            if (nodeChild) {
-                DrawNodeSelection();
-            }
-        }
+        DrawNodeSelectionChild();
         
         ImGui.TableNextColumn();
-        using (var nodeConfigChild = ImRaii.Child("node_config_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding)) {
-            if (nodeConfigChild) {
-                DrawNodeConfiguration();
+        DrawNodeConfigurationChild();
+    }
+
+    private void DrawAddonNameFilter() {
+        using var filterChild = ImRaii.Child("filter_child", new Vector2(ImGui.GetContentRegionAvail().X, 28.0f * ImGuiHelpers.GlobalScale));
+        if (!filterChild) return;
+        
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        ImGui.InputTextWithHint("##filter", "filter...", ref filter, 64, ImGuiInputTextFlags.AutoSelectAll);
+    }
+
+    private void DrawAddonSelectionChild() {
+        using var addonChild = ImRaii.Child("addon_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding);
+        if (!addonChild) return;
+        
+        DrawAddonSelection();
+    }
+    
+    private void DrawNodeExtrasTable() {
+        using var nodeExtrasTable = ImRaii.Table("node_extras_table", 2);
+        if (!nodeExtrasTable) return;
+        
+        ImGui.TableSetupColumn("##typeFilter", ImGuiTableColumnFlags.WidthStretch);
+        ImGui.TableSetupColumn("##locatorButton", ImGuiTableColumnFlags.WidthFixed, 32.0f * ImGuiHelpers.GlobalScale);
+
+        ImGui.TableNextColumn();
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        DrawNodeTypeSelection();
+
+        ImGui.TableNextColumn();
+        using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+            if (ImGui.Button(locateNode ? FontAwesomeIcon.EyeSlash.ToIconString() : FontAwesomeIcon.Eye.ToIconString())) { 
+                locateNode = !locateNode;
             }
         }
+
+        if (ImGui.IsItemHovered()) {
+            ImGui.SetTooltip(locateNode ? "Hide Node Locator" : "Show Node Locator");
+        }
+    }
+
+    private void DrawNodeTypeSelection() {
+        using var typeCombo = ImRaii.Combo("##nodeTypeFilter", typeFilter.ToString(), ImGuiComboFlags.HeightLarge);
+        if (!typeCombo) return;
+        
+        foreach (var enumValue in Enum.GetValues<ExtendedNodeType>()) {
+            if (ImGui.Selectable(enumValue.ToString(), typeFilter == enumValue)) {
+                typeFilter = enumValue;
+            }
+        }
+    }
+
+    private void DrawNodeSelectionChild() {
+        using var nodeChild = ImRaii.Child("node_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding);
+        if (!nodeChild) return;
+        
+        DrawNodeSelection();
+    }
+
+    private void DrawNodeConfigurationChild() {
+        using var nodeConfigChild = ImRaii.Child("node_config_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding);
+        if (!nodeConfigChild) return;
+        
+        DrawNodeConfiguration();
     }
 
     private void DrawAddonSelection() {
@@ -136,36 +153,40 @@ public unsafe class ConfigurationWindow : Window {
         var extraButtonSize = new Vector2(ImGui.GetContentRegionAvail().X, 28.0f * ImGuiHelpers.GlobalScale);
         var listBoxSize = ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing - extraButtonSize;
              
-        using (var listBox = ImRaii.ListBox("##addonSelectionListBox", listBoxSize)) {
-            if (listBox) {
-                using var headerHoverColor = ImRaii.PushColor(ImGuiCol.HeaderHovered, ImGui.GetStyle().Colors[(int) ImGuiCol.HeaderHovered] with { W = 0.1f });
-                using var textSelectedColor = ImRaii.PushColor(ImGuiCol.Header, ImGui.GetStyle().Colors[(int) ImGuiCol.Header] with { W = 0.1f });
+        DrawAddonSelectionList(listBoxSize);
+        DrawAddonSelectionShowHideButton();
+    }
 
-                ImGuiClip.ClippedDraw(Addons, pointer => {
+    private void DrawAddonSelectionList(Vector2 listBoxSize) {
+        using var listBox = ImRaii.ListBox("##addonSelectionListBox", listBoxSize);
+        if (!listBox) return;
+        
+        using var headerHoverColor = ImRaii.PushColor(ImGuiCol.HeaderHovered, ImGui.GetStyle().Colors[(int) ImGuiCol.HeaderHovered] with { W = 0.1f });
+        using var textSelectedColor = ImRaii.PushColor(ImGuiCol.Header, ImGui.GetStyle().Colors[(int) ImGuiCol.Header] with { W = 0.1f });
+
+        ImGuiClip.ClippedDraw(Addons, pointer => {
                     
-                    var cursorPosition = ImGui.GetCursorPos();
-                    if (ImGui.Selectable($"##{pointer.GetHashCode()}", selectedAddon == pointer.Value, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
-                        selectedAddon = pointer.Value;
-                    }
-
-                    ImGui.SetCursorPos(cursorPosition);
-                    var color = !pointer.Value->IsVisible ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
-                    ImGui.TextColored(color, pointer.Value->NameString);
-                    
-
-                }, ImGui.GetTextLineHeight());
+            var cursorPosition = ImGui.GetCursorPos();
+            if (ImGui.Selectable($"##{pointer.GetHashCode()}", selectedAddon == pointer.Value, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
+                selectedAddon = pointer.Value;
             }
-        }
-         
-        using (var selectionListButtonChild = ImRaii.Child("addon_selection_list_button", ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing)) {
-            if (selectionListButtonChild) {
-                var text = System.Config.HideInactiveAddons ? "Show Inactive" : "Hide Inactive";
+
+            ImGui.SetCursorPos(cursorPosition);
+            var color = !pointer.Value->IsVisible ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
+            ImGui.TextColored(color, pointer.Value->NameString);
+                    
+
+        }, ImGui.GetTextLineHeight());
+    }
+
+    private static void DrawAddonSelectionShowHideButton() {
+        using var selectionListButtonChild = ImRaii.Child("addon_selection_list_button", ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing);
+        if (!selectionListButtonChild) return;
+        var text = System.Config.HideInactiveAddons ? "Show Inactive" : "Hide Inactive";
      
-                if (ImGui.Button(text, ImGui.GetContentRegionAvail())) {
-                    System.Config.HideInactiveAddons = !System.Config.HideInactiveAddons;
-                    System.Config.Save();
-                }
-            }
+        if (ImGui.Button(text, ImGui.GetContentRegionAvail())) {
+            System.Config.HideInactiveAddons = !System.Config.HideInactiveAddons;
+            System.Config.Save();
         }
     }
 
@@ -175,26 +196,31 @@ public unsafe class ConfigurationWindow : Window {
         var extraButtonSize = new Vector2(ImGui.GetContentRegionAvail().X, 28.0f * ImGuiHelpers.GlobalScale);
         var listBoxSize = ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing - extraButtonSize;
              
-        using (var listBox = ImRaii.ListBox("##nodeSelectionListBox", listBoxSize)) {
-            if (listBox) {
-                using var headerHoverColor = ImRaii.PushColor(ImGuiCol.HeaderHovered, ImGui.GetStyle().Colors[(int) ImGuiCol.HeaderHovered] with { W = 0.1f });
-                using var textSelectedColor = ImRaii.PushColor(ImGuiCol.Header, ImGui.GetStyle().Colors[(int) ImGuiCol.Header] with { W = 0.1f });
+        DrawNodeTypeListBox(listBoxSize);
+        DrawNodeSelectionShowHideButton();
+    }
+
+    private void DrawNodeTypeListBox(Vector2 listBoxSize) {
+        using var listBox = ImRaii.ListBox("##nodeSelectionListBox", listBoxSize);
+        if (!listBox) return;
+        
+        using var headerHoverColor = ImRaii.PushColor(ImGuiCol.HeaderHovered, ImGui.GetStyle().Colors[(int) ImGuiCol.HeaderHovered] with { W = 0.1f });
+        using var textSelectedColor = ImRaii.PushColor(ImGuiCol.Header, ImGui.GetStyle().Colors[(int) ImGuiCol.Header] with { W = 0.1f });
                 
-                if (selectedAddon is not null) {
-                    DrawNodeRecursively(ref selectedAddon->UldManager, selectedAddon->NameString);
-                }
-            }
+        if (selectedAddon is not null) {
+            DrawNodeRecursively(ref selectedAddon->UldManager, selectedAddon->NameString);
         }
-         
-        using (var selectionListButtonChild = ImRaii.Child("node_selection_list_button", ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing)) {
-            if (selectionListButtonChild) {
-                var text = System.Config.HideInactiveNodes ? "Show Inactive" : "Hide Inactive";
+    }
+
+    private static void DrawNodeSelectionShowHideButton() {
+        using var selectionListButtonChild = ImRaii.Child("node_selection_list_button", ImGui.GetContentRegionAvail() - ImGui.GetStyle().ItemInnerSpacing);
+        if (!selectionListButtonChild) return;
+        
+        var text = System.Config.HideInactiveNodes ? "Show Inactive" : "Hide Inactive";
      
-                if (ImGui.Button(text, ImGui.GetContentRegionAvail())) {
-                    System.Config.HideInactiveNodes = !System.Config.HideInactiveNodes;
-                    System.Config.Save();
-                }
-            }
+        if (ImGui.Button(text, ImGui.GetContentRegionAvail())) {
+            System.Config.HideInactiveNodes = !System.Config.HideInactiveNodes;
+            System.Config.Save();
         }
     }
 
@@ -284,18 +310,18 @@ public unsafe class ConfigurationWindow : Window {
     }
     
     private static void DrawCopyConfigButton(OverrideConfig? option) {
-        using (ImRaii.Disabled(option is null)) {
-            if (ImGui.Button("Copy", new Vector2(ImGui.GetContentRegionMax().X * 1.0f / 6.0f, ImGui.GetContentRegionMax().Y))) {
-                var jsonString = JsonSerializer.Serialize(option, JsonSettings.SerializerOptions);
-                var compressed = Util.CompressString(jsonString);
-                ImGui.SetClipboardText(Convert.ToBase64String(compressed));
-            }
-            
-            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) {
-                ImGui.SetTooltip("Copy Configuration");
-            }
-            ImGui.SameLine();
+        using var disabled = ImRaii.Disabled(option is null);
+        
+        if (ImGui.Button("Copy", new Vector2(ImGui.GetContentRegionMax().X * 1.0f / 6.0f, ImGui.GetContentRegionMax().Y))) {
+            var jsonString = JsonSerializer.Serialize(option, JsonSettings.SerializerOptions);
+            var compressed = Util.CompressString(jsonString);
+            ImGui.SetClipboardText(Convert.ToBase64String(compressed));
         }
+            
+        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) {
+            ImGui.SetTooltip("Copy Configuration");
+        }
+        ImGui.SameLine();
     }
 
     private void DrawPasteConfigButton(OverrideConfig? option) {
@@ -378,7 +404,7 @@ public unsafe class ConfigurationWindow : Window {
                 ExtendedNodeType.Counter when nodeType is NodeType.Counter => true,
                 ExtendedNodeType.Collision when nodeType is NodeType.Collision => true,
                 ExtendedNodeType.ClippingMask when nodeType is NodeType.ClippingMask => true,
-                ExtendedNodeType.Component when (int)node.Value->Type > 1000 => true,
+                ExtendedNodeType.Component when node.Value->GetNodeType() is NodeType.Component => true,
                 _ => false,
             };
 
@@ -434,43 +460,23 @@ public unsafe class ConfigurationWindow : Window {
         
         // Top
         ImGui.GetBackgroundDrawList()
-            .AddRectFilled(
-                    new Vector2(0.0f, 0.0f) + viewportOffset, 
-                    viewportSize with { Y = node->ScreenY } + viewportOffset, 
-                    maskColor
-                );
+            .AddRectFilled(new Vector2(0.0f, 0.0f) + viewportOffset, viewportSize with { Y = node->ScreenY } + viewportOffset, maskColor);
 
         // Left
         ImGui.GetBackgroundDrawList()
-            .AddRectFilled(
-                    new Vector2(0.0f, 0.0f) + viewportOffset, 
-                    viewportSize with { X = node->ScreenX } + viewportOffset, 
-                    maskColor
-                );
+            .AddRectFilled(new Vector2(0.0f, 0.0f) + viewportOffset, viewportSize with { X = node->ScreenX } + viewportOffset, maskColor);
 
         // Right
         ImGui.GetBackgroundDrawList()
-            .AddRectFilled(
-                    new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, 0.0f) + viewportOffset, 
-                    new Vector2(viewportSize.X, viewportSize.Y) + viewportOffset, 
-                    maskColor
-                );
+            .AddRectFilled(new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, 0.0f) + viewportOffset, new Vector2(viewportSize.X, viewportSize.Y) + viewportOffset, maskColor);
 
         // Bottom
         ImGui.GetBackgroundDrawList()
-            .AddRectFilled(
-                    new Vector2(0.0f, node->ScreenY + node->GetHeight() * nodeScale.Y) + viewportOffset, 
-                    new Vector2(viewportSize.X, viewportSize.Y) + viewportOffset, 
-                    maskColor
-                );
+            .AddRectFilled(new Vector2(0.0f, node->ScreenY + node->GetHeight() * nodeScale.Y) + viewportOffset, new Vector2(viewportSize.X, viewportSize.Y) + viewportOffset, maskColor);
 
         // Border
         ImGui.GetBackgroundDrawList()
-            .AddRect(
-                    new Vector2(node->ScreenX, node->ScreenY) - Vector2.One + viewportOffset, 
-                    new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, node->ScreenY + node->GetHeight() * nodeScale.Y) + Vector2.One + viewportOffset, 
-                    borderColor
-                );
+            .AddRect(new Vector2(node->ScreenX, node->ScreenY) - Vector2.One + viewportOffset, new Vector2(node->ScreenX + node->GetWidth() * nodeScale.X, node->ScreenY + node->GetHeight() * nodeScale.Y) + Vector2.One + viewportOffset, borderColor);
     }
 
     private string? GetProxyNameForSelectedAddon() {
