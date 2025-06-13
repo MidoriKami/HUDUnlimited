@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Utility.Numerics;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
