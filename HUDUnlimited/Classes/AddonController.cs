@@ -134,11 +134,11 @@ public unsafe class AddonController : IDisposable {
                 }
 
                 if (option.Flags.HasFlag(OverrideFlags.FontType)) {
-                    textNode->FontType = option.FontType;
+                    textNode->SetFont(option.FontType);
                 }
 
                 if (option.Flags.HasFlag(OverrideFlags.AlignmentType)) {
-                    textNode->AlignmentFontType = (byte) option.AlignmentType;
+                    textNode->SetAlignment(option.AlignmentType);
                 }
             }
         }

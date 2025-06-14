@@ -168,7 +168,7 @@ public class OverrideConfig {
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGuiTweaks.EnumCombo(label, ref option);
+            configChanged |= ImGuiTweaks.EnumCombo($"##{label}", ref option);
         }
         
         return configChanged;
