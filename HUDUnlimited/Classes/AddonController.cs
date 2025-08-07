@@ -56,7 +56,7 @@ public unsafe class AddonController : IDisposable {
 
         foreach (var option in options) {
             // If this option is for an Embedded Addon, and we are being called from the proxyParent. We need to fetch the correct addon.
-            var targetAddon = (AtkUnitBase*)args.Addon;
+            var targetAddon = (AtkUnitBase*)args.Addon.Address;
             
             // Check that the addon we want to modify is completely ready yet.
             if (!targetAddon->IsReady) continue;
