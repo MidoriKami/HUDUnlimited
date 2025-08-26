@@ -5,6 +5,7 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using KamiLib.Classes;
 
@@ -40,6 +41,7 @@ public class OverrideConfig {
     public int FontSize = 12;
     public FontType FontType = FontType.Axis;
     public AlignmentType AlignmentType = AlignmentType.Left;
+    public TextFlags TextFlags;
     
     public void DrawConfig() {
         using var disabled = ImRaii.Disabled(!OverrideEnabled);
@@ -95,6 +97,7 @@ public class OverrideConfig {
         configChanged |= DrawIntOption("Font Size", ref FontSize, OverrideFlags.FontSize);
         configChanged |= DrawEnumOption("Font Type", ref FontType, OverrideFlags.FontType);
         configChanged |= DrawEnumOption("Alignment Type", ref AlignmentType, OverrideFlags.AlignmentType);
+        configChanged |= DrawEnumOption("Text Flags", ref TextFlags, OverrideFlags.TextFlags);
 
         return configChanged;
     }
@@ -155,7 +158,7 @@ public class OverrideConfig {
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGui.InputInt($"##{label}", ref option, 0, 0);
+            configChanged |= ImGui.InputInt($"##{label}", ref option);
         }
         
         return configChanged;
@@ -242,7 +245,8 @@ public class OverrideConfig {
         other.TextBackgroundColor = TextBackgroundColor;
         other.FontSize = FontSize;
         other.FontType = FontType;
-        other.AlignmentType =  AlignmentType;
+        other.AlignmentType = AlignmentType;
+        other.TextFlags = TextFlags;
     }
 }
 
@@ -261,4 +265,5 @@ public enum OverrideFlags {
     FontSize = 1 << 10,
     FontType = 1 << 11,
     AlignmentType  = 1 << 12,
+    TextFlags = 1 << 13,
 }

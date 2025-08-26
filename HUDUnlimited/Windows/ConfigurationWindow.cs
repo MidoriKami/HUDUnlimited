@@ -284,6 +284,7 @@ public unsafe class ConfigurationWindow : Window {
                     newOption.FontSize = textNode->FontSize;
                     newOption.FontType = textNode->FontType;
                     newOption.AlignmentType = textNode->AlignmentType;
+                    newOption.TextFlags = textNode->TextFlags;
                 }
                         
                 System.Config.Overrides.Add(newOption);
@@ -411,6 +412,7 @@ public unsafe class ConfigurationWindow : Window {
                 option.FontSize = textNode->FontSize;
                 option.FontType = textNode->FontType;
                 option.AlignmentType = textNode->AlignmentType;
+                option.TextFlags = textNode->TextFlags;
                 System.Config.Save();
             }
         }

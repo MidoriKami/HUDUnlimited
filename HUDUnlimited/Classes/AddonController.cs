@@ -140,6 +140,10 @@ public unsafe class AddonController : IDisposable {
                 if (option.Flags.HasFlag(OverrideFlags.AlignmentType)) {
                     textNode->SetAlignment(option.AlignmentType);
                 }
+
+                if (option.Flags.HasFlag(OverrideFlags.TextFlags)) {
+                    textNode->TextFlags = option.TextFlags;
+                }
             }
         }
     }
