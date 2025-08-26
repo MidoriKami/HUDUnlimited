@@ -97,7 +97,7 @@ public class OverrideConfig {
         configChanged |= DrawIntOption("Font Size", ref FontSize, OverrideFlags.FontSize);
         configChanged |= DrawEnumOption("Font Type", ref FontType, OverrideFlags.FontType);
         configChanged |= DrawEnumOption("Alignment Type", ref AlignmentType, OverrideFlags.AlignmentType);
-        configChanged |= DrawEnumOption("Text Flags", ref TextFlags, OverrideFlags.TextFlags);
+        configChanged |= DrawFlagEnumOption("Text Flags", ref TextFlags, OverrideFlags.TextFlags);
 
         return configChanged;
     }
@@ -172,6 +172,19 @@ public class OverrideConfig {
         using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             configChanged |= ImGuiTweaks.EnumCombo($"##{label}", ref option);
+        }
+        
+        return configChanged;
+    }
+    
+    private bool DrawFlagEnumOption(string label, ref TextFlags option, OverrideFlags flags) {
+        var configChanged = false;
+        configChanged |= DrawOptionHeader(label, this, flags);
+
+        ImGui.TableNextColumn();
+        using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
+            ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+            configChanged |= ImGuiTweaks.EnumFlagCombo($"##{label}", ref option);
         }
         
         return configChanged;
