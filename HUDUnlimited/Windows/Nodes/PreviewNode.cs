@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Numerics;
+using Dalamud.Game.Addon.Events;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using KamiToolKit.Classes;
 using KamiToolKit.Nodes;
 
 namespace HUDUnlimited.Windows.Nodes;
@@ -13,13 +15,38 @@ public unsafe class PreviewNode : SimpleComponentNode {
     private AlphaImageNode backgroundImageNode;
     private SimpleOverlayNode previewContainer;
     private SliderNode colorSliderNode;
-    private SliderNode scaleSliderNode;
     
     private AtkResNode* capturedNode;
+    private ViewportEventListener eventListener;
 
+    private float zoomFactor = 1.0f;
+    private bool dragStarted;
+    private Vector2 clickStart;
+    private Vector2 cumulativeOffset;
+    
     public PreviewNode() {
+        eventListener = new ViewportEventListener(OnViewportEvent);
+        
         backgroundImageNode = new AlphaImageNode();
         backgroundImageNode.AttachNode(this);
+        
+        backgroundImageNode.AddEvent(AtkEventType.MouseOver, () => Service.AddonEventManager.SetCursor(AddonCursorType.Hand));
+        backgroundImageNode.AddEvent(AtkEventType.MouseOut, () => Service.AddonEventManager.ResetCursor());
+        backgroundImageNode.AddEvent(AtkEventType.MouseWheel, (_, _, _, _, data) => {
+            zoomFactor += data->MouseData.WheelDirection * 0.10f;
+            AdjustPreviewNodePosition(capturedNode, cumulativeOffset);
+        });
+
+        backgroundImageNode.AddEvent(AtkEventType.MouseDown, (_, _, _, _, data)  => {
+            if (!dragStarted) {
+                eventListener.AddEvent(AtkEventType.MouseMove, backgroundImageNode);
+                eventListener.AddEvent(AtkEventType.MouseUp, backgroundImageNode);
+
+                Service.AddonEventManager.SetCursor(AddonCursorType.Grab);
+                clickStart = new Vector2(data->MouseData.PosX, data->MouseData.PosY);
+                dragStarted = true;
+            }
+        });
 
         previewContainer = new SimpleOverlayNode();
         previewContainer.AttachNode(this);
@@ -39,15 +66,6 @@ public unsafe class PreviewNode : SimpleComponentNode {
             Value = 100,
         };
         colorSliderNode.AttachNode(this);
-
-        scaleSliderNode = new SliderNode {
-            Range = 1000..50000,
-            DecimalPlaces = 2,
-            OnValueChanged = _ => AdjustPreviewNodePosition(capturedNode),
-            Value = 10000,
-            Step = 500,
-        };
-        scaleSliderNode.AttachNode(this);
     }
 
     protected override void OnSizeChanged() {
@@ -61,9 +79,37 @@ public unsafe class PreviewNode : SimpleComponentNode {
 
         colorSliderNode.Size = new Vector2(200.0f, 24.0f);
         colorSliderNode.Position = new Vector2(10.0f, Height - colorSliderNode.Height - 5.0f);
+    }
 
-        scaleSliderNode.Size = new Vector2(200.0f, 24.0f);
-        scaleSliderNode.Position = new Vector2(Width - scaleSliderNode.Width - 35.0f, Height - scaleSliderNode.Height - 5.0f);
+    protected override void Dispose(bool disposing, bool isNativeDestructor) {
+        base.Dispose(disposing, isNativeDestructor);
+        eventListener.Dispose();
+    }
+
+    private void OnViewportEvent(AtkEventListener* thisPtr, AtkEventType eventType, int eventParam, AtkEvent* atkEvent, AtkEventData* atkEventData) {
+        switch (eventType) {
+            case AtkEventType.MouseMove when dragStarted:
+                var newPosition = new Vector2(atkEventData->MouseData.PosX, atkEventData->MouseData.PosY);
+                var delta = newPosition - clickStart;
+                cumulativeOffset += delta;
+                clickStart = newPosition;
+                previewContainer.Position += delta;
+                break;
+            
+            case AtkEventType.MouseUp:
+                eventListener.RemoveEvent(AtkEventType.MouseMove);
+                eventListener.RemoveEvent(AtkEventType.MouseUp);
+
+                if (backgroundImageNode.CheckCollision(atkEventData)) {
+                    Service.AddonEventManager.SetCursor(AddonCursorType.Hand);
+                }
+                else {
+                    Service.AddonEventManager.ResetCursor();
+                }
+                
+                dragStarted = false;
+                break;
+        }
     }
 
     public void SetTargetAddon(string addonName) {
@@ -80,24 +126,27 @@ public unsafe class PreviewNode : SimpleComponentNode {
     public void Reset() {
         ResetStolenNode();
         Service.AddonLifecycle.UnregisterListener(OnAddonFinalize);
+        eventListener.RemoveEvent(AtkEventType.MouseMove);
+        eventListener.RemoveEvent(AtkEventType.MouseUp);
     }
 
     private void AttachNode(AtkResNode* node, string attachedAddon) {
         if (node is null) return;
 
-        scaleSliderNode.Value = 10000;
+        zoomFactor = 1.0f;
         
         previewContainer.CollisionNode.Node->PrevSiblingNode = node;
         previewContainer.MarkDirty();
         previewContainer.ComponentBase->UldManager.UpdateDrawNodeList();
 
+        cumulativeOffset = Vector2.Zero;
         AdjustPreviewNodePosition(node);
 
         capturedNode = node;
         Service.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, attachedAddon, OnAddonFinalize);
     }
 
-    private void AdjustPreviewNodePosition(AtkResNode* node) {
+    private void AdjustPreviewNodePosition(AtkResNode* node, Vector2? offset = null) {
         if (node is null) return;
         
         var nodeSize = new Vector2(node->Width, node->Height);
@@ -112,15 +161,15 @@ public unsafe class PreviewNode : SimpleComponentNode {
             scaleAdjustment.Y = 1.0f;
         }
 
-        var scaleMultiplier = scaleSliderNode.Value / 10000.0f;
-
         var minFactor = MathF.Min(scaleAdjustment.X, scaleAdjustment.Y);
-        var scaleOffset = new Vector2(minFactor, minFactor) * scaleMultiplier;
+        var scaleOffset = new Vector2(minFactor, minFactor) * zoomFactor;
         
         var hijackedNodePosition = new Vector2(node->X, node->Y) * scaleOffset;
         var centerOffset = availableSize / 2.0f - nodeSize / 2.0f * scaleOffset;
+        
+        offset ??= Vector2.Zero;
 
-        previewContainer.Position = -hijackedNodePosition + new Vector2(10.0f, 10.0f) + centerOffset;
+        previewContainer.Position = -hijackedNodePosition + new Vector2(10.0f, 10.0f) + centerOffset + offset.Value;
         previewContainer.Scale = scaleOffset;
     }
 

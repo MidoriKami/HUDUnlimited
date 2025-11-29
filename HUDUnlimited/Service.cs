@@ -10,4 +10,5 @@ public class Service {
     [PluginService] public static IAddonLifecycle AddonLifecycle { get; set; }
     [PluginService] public static IPluginLog PluginLog { get; set; }
     [PluginService] public static INotificationManager NotificationManager { get; set; }
+    [PluginService] public static IAddonEventManager AddonEventManager { get; set; }
 }
