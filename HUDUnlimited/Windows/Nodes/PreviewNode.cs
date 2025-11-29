@@ -77,8 +77,8 @@ public unsafe class PreviewNode : SimpleComponentNode {
         backgroundImageNode.Size = previewContainer.Size;
         backgroundImageNode.Position = previewContainer.Position;
 
-        colorSliderNode.Size = new Vector2(200.0f, 24.0f);
-        colorSliderNode.Position = new Vector2(10.0f, Height - colorSliderNode.Height - 5.0f);
+        colorSliderNode.Size = new Vector2(255.0f, 24.0f);
+        colorSliderNode.Position = new Vector2(Width / 2.0f - 10.0f - colorSliderNode.Width / 2.0f, Height - colorSliderNode.Height - 5.0f);
     }
 
     protected override void Dispose(bool disposing, bool isNativeDestructor) {

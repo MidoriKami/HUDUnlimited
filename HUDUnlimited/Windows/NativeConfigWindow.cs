@@ -6,24 +6,25 @@ using KamiToolKit.Nodes;
 
 namespace HUDUnlimited.Windows;
 
-public unsafe class NativeConfigWindow : NativeAddon {
+public unsafe class ConfigurationWindow : NativeAddon {
 
 	private TabBarNode? tabBarNode;
 	private AddonSelectTabNode? addonSelectTabNode;
-    private PartSelectTabNode? partSelectTabNode;
+    private ComponentSelectTabNode? componentSelectTabNode;
 	private VerticalLineNode? verticalLineNode;
     private PreviewNode? previewNode;
 
 	protected override void OnSetup(AtkUnitBase* addon) {
-		SetWindowSize(900.0f, 600.0f);
+		SetWindowSize(1100.0f, 600.0f);
         
-        var searchWidgetSize = ContentSize.X / 3.0f - 16.0f;
+        var searchWidgetSize = ContentSize.X * 3.0f / 8.0f - 16.0f;
 
 		tabBarNode = new TabBarNode {
 			Position = ContentStartPosition, 
 			Size = new Vector2(searchWidgetSize, 28.0f),
 		};
 		tabBarNode.AddTab("Window", OnWindowTabSelected);
+        tabBarNode.AddTab("Component", OnComponentTabSelected, false);
 		tabBarNode.AddTab("Part", OnPartTabSelected, false);
 		tabBarNode.AddTab("Edit", OnEditTabSelected, false);
         tabBarNode.AttachNode(this);
@@ -36,12 +37,12 @@ public unsafe class NativeConfigWindow : NativeAddon {
         };
         addonSelectTabNode.AttachNode(this);
 
-        partSelectTabNode = new PartSelectTabNode {
+        componentSelectTabNode = new ComponentSelectTabNode {
             Position = new Vector2(tabBarNode.Bounds.Left, tabBarNode.Bounds.Bottom),
             Size = new Vector2(searchWidgetSize, ContentSize.Y - tabBarNode.Height - 4.0f),
             IsVisible = false,
         };
-        partSelectTabNode.AttachNode(this);
+        componentSelectTabNode.AttachNode(this);
 		
 		verticalLineNode = new VerticalLineNode {
 			Position = ContentStartPosition + new Vector2(searchWidgetSize + 8.0f, 0.0f),
@@ -61,47 +62,69 @@ public unsafe class NativeConfigWindow : NativeAddon {
     }
 
     private void OnAddonSelected(string addonName, AtkUnitBase* addon) {
+        if (tabBarNode is null) return;
+        
         previewNode?.SetTargetAddon(addonName);
         addon->UldManager.UpdateDrawNodeList();
         addon->UpdateCollisionNodeList(false);
+        
+        componentSelectTabNode?.Reset();        
+        
+        tabBarNode.EnableTab("Window");
+        tabBarNode.DisableTab("Component");
+        tabBarNode.DisableTab("Part");
+        tabBarNode.DisableTab("Edit");
     }
 
-    private void OnAddonConfirmed(string obj) {
+    // todo: decide if things should be cleared or relocked on re-select
+    private void OnAddonConfirmed(string addonName) {
         if (tabBarNode is null) return;
+        if (componentSelectTabNode is null) return;
 
-        OnPartTabSelected();
+        OnComponentTabSelected();
+        componentSelectTabNode.BuildForAddon(addonName);
 
-        tabBarNode.SelectTab("Part");
+        tabBarNode.SelectTab("Component");
 
         tabBarNode.EnableTab("Window");
-        tabBarNode.EnableTab("Part");
+        tabBarNode.EnableTab("Component");
+        tabBarNode.DisableTab("Part");
         tabBarNode.DisableTab("Edit");
     }
 
     private void OnWindowTabSelected() {
         if (addonSelectTabNode is null) return;
         if (tabBarNode is null) return;
-        if (partSelectTabNode is null) return;
+        if (componentSelectTabNode is null) return;
 
         addonSelectTabNode.IsVisible = true;
-        partSelectTabNode.IsVisible = false;
+        componentSelectTabNode.IsVisible = false;
+    }
+
+    private void OnComponentTabSelected() {
+        if (addonSelectTabNode is null) return;
+        if (tabBarNode is null) return;
+        if (componentSelectTabNode is null) return;
+
+        addonSelectTabNode.IsVisible = false;
+        componentSelectTabNode.IsVisible = true;
     }
 
     private void OnPartTabSelected() {
         if (addonSelectTabNode is null) return;
         if (tabBarNode is null) return;
-        if (partSelectTabNode is null) return;
+        if (componentSelectTabNode is null) return;
 
         addonSelectTabNode.IsVisible = false;
-        partSelectTabNode.IsVisible = true;
+        componentSelectTabNode.IsVisible = false;
     }
 
     private void OnEditTabSelected() {
         if (addonSelectTabNode is null) return;
         if (tabBarNode is null) return;
-        if (partSelectTabNode is null) return;
+        if (componentSelectTabNode is null) return;
 
         addonSelectTabNode.IsVisible = false;
-        partSelectTabNode.IsVisible = false;
+        componentSelectTabNode.IsVisible = false;
     }
 }

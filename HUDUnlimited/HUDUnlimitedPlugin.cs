@@ -20,7 +20,7 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
         
         System.AddonController = new AddonController();
         
-        System.NativeConfigWindow = new NativeConfigWindow {
+        System.NativeConfigWindow = new ConfigurationWindow {
             InternalName = "HUDUnlimitedConfig", 
             Title = "HUD Unlimited Configuration",
         };

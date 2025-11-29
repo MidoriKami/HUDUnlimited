@@ -15,5 +15,5 @@ public static class System {
 	public static CommandManager CommandManager { get; set; }
 	public static OverrideListWindow OverrideListWindow { get; set; }
 	public static InfoWindow InfoWindow { get; set; }
-	public static NativeConfigWindow NativeConfigWindow { get; set; }
+	public static ConfigurationWindow NativeConfigWindow { get; set; }
 }
