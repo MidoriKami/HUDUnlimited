@@ -200,7 +200,6 @@ public unsafe class PreviewNode : SimpleComponentNode {
         
         outlineNode.Size = nodeSize * scaleOffset + new Vector2(32.0f, 32.0f);
         outlineNode.Position = (previewContainer.Position + hijackedNodePosition) - new Vector2(16.0f, 16.0f);
-        // outlineNode.Scale = scaleOffset;
         outlineNode.IsVisible = true;
     }
 

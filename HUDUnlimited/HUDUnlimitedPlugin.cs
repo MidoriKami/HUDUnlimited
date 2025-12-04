@@ -1,8 +1,7 @@
-﻿using Dalamud.Plugin;
+﻿using Dalamud.Game.Command;
+using Dalamud.Plugin;
 using HUDUnlimited.Classes;
 using HUDUnlimited.Windows;
-using KamiLib.CommandManager;
-using KamiLib.Window;
 using KamiToolKit;
 using AddonController = HUDUnlimited.Classes.AddonController;
 
@@ -14,38 +13,36 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
         
         System.Config = Configuration.Load();
         KamiToolKitLibrary.Initialize(pluginInterface);
-
-        System.OverrideListWindow = new OverrideListWindow();
-        System.InfoWindow = new InfoWindow();
         
         System.AddonController = new AddonController();
         
-        System.NativeConfigWindow = new ConfigurationWindow {
+        System.ConfigWindow = new ConfigurationWindow {
             InternalName = "HUDUnlimitedConfig", 
             Title = "HUD Unlimited Configuration",
         };
-        
-        System.WindowManager = new WindowManager(Service.PluginInterface);
-        System.WindowManager.AddWindow(System.OverrideListWindow);
-        System.WindowManager.AddWindow(System.InfoWindow);
 
-        System.CommandManager = new CommandManager(Service.PluginInterface, "hudu", "hudunlimited");
-        System.CommandManager.RegisterCommand(new CommandHandler {
-            ActivationPath = "/",
-            Delegate = _ => System.NativeConfigWindow.Toggle(),
+        Service.CommandManager.AddHandler("/hudu", new CommandInfo(CommandHandler) {
+            HelpMessage = "Open Configuration Window",
+            ShowInHelp = true,
         });
 
-        Service.PluginInterface.UiBuilder.OpenConfigUi += System.NativeConfigWindow.Toggle;
+        System.ConfigWindow.DebugOpen();
+    }
 
-        System.NativeConfigWindow.DebugOpen();
+    private static void CommandHandler(string command, string arguments) {
+        switch (command) {
+            case "/hudu":
+                System.ConfigWindow.Toggle();
+                break;
+        }
     }
 
     public void Dispose() {
-        Service.PluginInterface.UiBuilder.OpenConfigUi -= System.NativeConfigWindow.Toggle;
+        Service.PluginInterface.UiBuilder.OpenConfigUi -= System.ConfigWindow.Toggle;
 
-        System.CommandManager.Dispose();
+        Service.CommandManager.RemoveHandler("/hudu");
+
         System.AddonController.Dispose();
-        System.WindowManager.Dispose();
         
         KamiToolKitLibrary.Dispose();
     }
