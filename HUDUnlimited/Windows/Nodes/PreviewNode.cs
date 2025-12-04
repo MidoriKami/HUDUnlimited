@@ -15,6 +15,8 @@ public unsafe class PreviewNode : SimpleComponentNode {
     private AlphaImageNode backgroundImageNode;
     private SimpleOverlayNode previewContainer;
     private SliderNode colorSliderNode;
+    private TextButtonNode borderVisibilityButton;
+    private BorderNineGridNode outlineNode;
     
     private AtkResNode* capturedNode;
     private ViewportEventListener eventListener;
@@ -66,6 +68,21 @@ public unsafe class PreviewNode : SimpleComponentNode {
             Value = 100,
         };
         colorSliderNode.AttachNode(this);
+
+        outlineNode = new BorderNineGridNode {
+            IsVisible = false,
+        };
+        outlineNode.AttachNode(this);
+        
+        borderVisibilityButton = new TextButtonNode {
+            String = "Hide Outline",
+        };
+        borderVisibilityButton.AttachNode(this);
+
+        borderVisibilityButton.OnClick = () => {
+            outlineNode.IsVisible = !outlineNode.IsVisible;
+            borderVisibilityButton.String = outlineNode.IsVisible ? "Hide Outline" : "Show Outline";
+        };
     }
 
     protected override void OnSizeChanged() {
@@ -76,6 +93,9 @@ public unsafe class PreviewNode : SimpleComponentNode {
         
         backgroundImageNode.Size = previewContainer.Size;
         backgroundImageNode.Position = previewContainer.Position;
+
+        borderVisibilityButton.Size = new Vector2(150.0f, 28.0f);
+        borderVisibilityButton.Position = new Vector2(Width - 10.0f - borderVisibilityButton.Width, Height - 5.0f - borderVisibilityButton.Height);
 
         colorSliderNode.Size = new Vector2(255.0f, 24.0f);
         colorSliderNode.Position = new Vector2(Width / 2.0f - 10.0f - colorSliderNode.Width / 2.0f, Height - colorSliderNode.Height - 5.0f);
@@ -94,6 +114,7 @@ public unsafe class PreviewNode : SimpleComponentNode {
                 cumulativeOffset += delta;
                 clickStart = newPosition;
                 previewContainer.Position += delta;
+                outlineNode.Position += delta;
                 break;
             
             case AtkEventType.MouseUp:
@@ -130,6 +151,10 @@ public unsafe class PreviewNode : SimpleComponentNode {
         eventListener.RemoveEvent(AtkEventType.MouseUp);
     }
 
+    public void OutlineAddon() {
+        
+    }
+
     private void AttachNode(AtkResNode* node, string attachedAddon) {
         if (node is null) return;
 
@@ -150,6 +175,7 @@ public unsafe class PreviewNode : SimpleComponentNode {
         if (node is null) return;
         
         var nodeSize = new Vector2(node->Width, node->Height);
+        var nodePosition = new Vector2(node->X, node->Y);
         var availableSize = Size - new Vector2(20.0f, 20.0f);
         var scaleAdjustment = availableSize / nodeSize;
 
@@ -164,13 +190,18 @@ public unsafe class PreviewNode : SimpleComponentNode {
         var minFactor = MathF.Min(scaleAdjustment.X, scaleAdjustment.Y);
         var scaleOffset = new Vector2(minFactor, minFactor) * zoomFactor;
         
-        var hijackedNodePosition = new Vector2(node->X, node->Y) * scaleOffset;
+        var hijackedNodePosition = nodePosition * scaleOffset;
         var centerOffset = availableSize / 2.0f - nodeSize / 2.0f * scaleOffset;
-        
+
         offset ??= Vector2.Zero;
 
         previewContainer.Position = -hijackedNodePosition + new Vector2(10.0f, 10.0f) + centerOffset + offset.Value;
         previewContainer.Scale = scaleOffset;
+        
+        outlineNode.Size = nodeSize * scaleOffset + new Vector2(32.0f, 32.0f);
+        outlineNode.Position = (previewContainer.Position + hijackedNodePosition) - new Vector2(16.0f, 16.0f);
+        // outlineNode.Scale = scaleOffset;
+        outlineNode.IsVisible = true;
     }
 
     private void ResetStolenNode() {

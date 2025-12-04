@@ -41,6 +41,7 @@ public unsafe class ConfigurationWindow : NativeAddon {
             Position = new Vector2(tabBarNode.Bounds.Left, tabBarNode.Bounds.Bottom),
             Size = new Vector2(searchWidgetSize, ContentSize.Y - tabBarNode.Height - 4.0f),
             IsVisible = false,
+            OnComponentConfirmed = OnComponentConfirmed,
         };
         componentSelectTabNode.AttachNode(this);
 		
@@ -59,6 +60,7 @@ public unsafe class ConfigurationWindow : NativeAddon {
 
     protected override void OnFinalize(AtkUnitBase* addon) {
         previewNode?.Reset();
+        componentSelectTabNode?.Reset();
     }
 
     private void OnAddonSelected(string addonName, AtkUnitBase* addon) {
@@ -89,6 +91,17 @@ public unsafe class ConfigurationWindow : NativeAddon {
         tabBarNode.EnableTab("Window");
         tabBarNode.EnableTab("Component");
         tabBarNode.DisableTab("Part");
+        tabBarNode.DisableTab("Edit");
+    }
+    
+    private void OnComponentConfirmed(string obj) {
+        if (tabBarNode is null) return;
+
+        tabBarNode.SelectTab("Part");
+
+        tabBarNode.EnableTab("Window");
+        tabBarNode.EnableTab("Component");
+        tabBarNode.EnableTab("Part");
         tabBarNode.DisableTab("Edit");
     }
 
