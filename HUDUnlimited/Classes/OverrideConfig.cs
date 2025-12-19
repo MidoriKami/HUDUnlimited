@@ -5,9 +5,8 @@ using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using KamiLib.Classes;
+using HUDUnlimited.Utilities;
 
 namespace HUDUnlimited.Classes;
 
@@ -59,7 +58,7 @@ public class OverrideConfig {
         ImGui.TableNextColumn();
 
         using (ImRaii.PushStyle(ImGuiStyleVar.Alpha, 1.0f)) {
-            using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+            using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
 
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3.0f * ImGuiHelpers.GlobalScale);
                 ImGui.Text(FontAwesomeIcon.InfoCircle.ToIconString());
@@ -171,7 +170,7 @@ public class OverrideConfig {
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGuiTweaks.EnumCombo($"##{label}", ref option);
+            configChanged |= ImGuiCombos.EnumCombo($"##{label}", ref option);
         }
         
         return configChanged;
@@ -184,7 +183,7 @@ public class OverrideConfig {
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-            configChanged |= ImGuiTweaks.EnumFlagCombo($"##{label}", ref option);
+            configChanged |= ImGuiCombos.EnumFlagCombo($"##{label}", ref option);
         }
         
         return configChanged;

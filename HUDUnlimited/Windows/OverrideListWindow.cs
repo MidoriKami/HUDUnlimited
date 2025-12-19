@@ -8,21 +8,25 @@ using Dalamud.Interface;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using HUDUnlimited.Classes;
-using KamiLib.Classes;
-using KamiLib.Window;
 
 namespace HUDUnlimited.Windows;
 
-public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f, 625.0f)) {
+public class OverrideListWindow : Window {
 
     private string selectedAddon = string.Empty;
     private OverrideConfig? selectionConfigOption;
-    private readonly List<OverrideConfig> selectedConfigs = []; 
+    private readonly List<OverrideConfig> selectedConfigs = [];
 
-    
-    protected override void DrawContents() {
+    public OverrideListWindow() : base("Preset Browser") {
+        SizeConstraints = new WindowSizeConstraints {
+            MinimumSize = new Vector2(600.0f, 625.0f),
+        };
+    }
+
+    public override void Draw() {
         using var table = ImRaii.Table("option_viewer", 2, ImGuiTableFlags.Resizable);
         if (!table) return;
         
@@ -56,18 +60,18 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
         using var importChild = ImRaii.Child("import_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding);
         if (!importChild) return;
         
-        using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+        using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
             if (ImGui.Button(FontAwesomeIcon.FileImport.ToIconString(), ImGui.GetContentRegionAvail())) {
                 try {
                     ImportPresets();
                 }
                 catch (Exception e) {
-                    Service.NotificationManager.AddNotification(new Notification {
+                    Services.NotificationManager.AddNotification(new Notification {
                         Type = NotificationType.Error, 
                         Content = "Error reading data from clipboard, try copying preset again.",
                         Minimized = false,
                     });
-                    Service.PluginLog.Error(e, "Error parsing preset from clipboard");
+                    Services.PluginLog.Error(e, "Error parsing preset from clipboard");
                 }
             }
         }
@@ -82,7 +86,7 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
         var uncompressed = Util.DecompressString(decodedString);
 
         if (uncompressed.IsNullOrEmpty()) {
-            Service.NotificationManager.AddNotification(new Notification {
+            Services.NotificationManager.AddNotification(new Notification {
                 Type = NotificationType.Error, Content = "Unable to Import Presets",
             });
         }
@@ -97,7 +101,7 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
                 }
             }
 
-            Service.NotificationManager.AddNotification(new Notification {
+            Services.NotificationManager.AddNotification(new Notification {
                 Type = NotificationType.Info, Content = $"Imported {addedCount} new presets",
             });
             
@@ -110,7 +114,11 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
         if (!configChild) return;
         if (selectedAddon == string.Empty) return;
         
-        ImGuiTweaks.Header(selectedAddon, true);
+        ImGuiHelpers.ScaledDummy(10.0f);
+        ImGuiHelpers.CenteredText(selectedAddon);
+        ImGui.Separator();
+        ImGuiHelpers.ScaledDummy(5.0f);
+
         using var tabBar = ImRaii.TabBar("browser_tab_bar");
         if (!tabBar) return;
         
@@ -190,7 +198,7 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
         
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!(ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift) || selectedConfigs.Count == 0)) {
-            using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+            using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                 if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), ImGui.GetContentRegionAvail())) {
                     System.Config.Overrides.RemoveAll(option => selectedConfigs.Contains(option));
                     System.Config.Save();
@@ -212,14 +220,14 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
 
     private void DrawExportButton() {
         using var disabled = ImRaii.Disabled(selectedConfigs.Count == 0);
-        using var font = Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push();
+        using var font = Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push();
 
         if (ImGui.Button(FontAwesomeIcon.FileExport.ToIconString(), ImGui.GetContentRegionAvail())) {
             var jsonString = JsonSerializer.Serialize(selectedConfigs, JsonSettings.SerializerOptions);
             var compressed = Util.CompressString(jsonString);
             ImGui.SetClipboardText(Convert.ToBase64String(compressed));
 
-            Service.NotificationManager.AddNotification(new Notification {
+            Services.NotificationManager.AddNotification(new Notification {
                 Type = NotificationType.Info, Content = $"Exported {selectedConfigs.Count} presets to clipboard.",
             });
         }
@@ -250,7 +258,7 @@ public class OverrideListWindow() : Window("Preset Browser", new Vector2(600.0f,
                 if (deleteChild) {
                     using var disabled = ImRaii.Disabled(!(ImGui.GetIO().KeyShift && ImGui.GetIO().KeyCtrl));
 
-                    using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+                    using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                         if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), ImGui.GetContentRegionAvail())) {
                             removeConfig = selectionConfigOption;
                         }

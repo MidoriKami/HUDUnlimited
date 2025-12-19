@@ -19,19 +19,19 @@ public unsafe class AddonController : IDisposable {
     }
 
     public void Dispose() {
-        Service.AddonLifecycle.UnregisterListener(ApplyOverrides);
+        Services.AddonLifecycle.UnregisterListener(ApplyOverrides);
     }
 
     public void EnableOverride(OverrideConfig overrideConfig) {
         if (!trackedAddons.Any(addon => addon == overrideConfig.AttachAddonName)) {
-            Service.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
-            Service.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
-            Service.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
-            Service.PluginLog.Debug($"Registering Listener: {overrideConfig.AttachAddonName}");
+            Services.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
+            Services.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
+            Services.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
+            Services.PluginLog.Debug($"Registering Listener: {overrideConfig.AttachAddonName}");
             trackedAddons.Add(overrideConfig.AttachAddonName);
         }
         else {
-            Service.PluginLog.Debug($"Listener already active for {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
+            Services.PluginLog.Debug($"Listener already active for {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
         }
     }
 
@@ -41,11 +41,11 @@ public unsafe class AddonController : IDisposable {
             .Any(option => option.OverrideEnabled);
 
         if (!anyStillActive) {
-            Service.AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
-            Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
-            Service.AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
+            Services.AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
+            Services.AddonLifecycle.UnregisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
+            Services.AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
             trackedAddons.Remove(overrideConfig.AttachAddonName);
-            Service.PluginLog.Debug($"Unregistering Listener: {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
+            Services.PluginLog.Debug($"Unregistering Listener: {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
         }
     }
     
@@ -168,19 +168,19 @@ public unsafe class AddonController : IDisposable {
                 var componentNode = (AtkComponentNode*) FindNode(ref manager, index);
 
                 if (componentNode is null) {
-                    Service.PluginLog.Warning("Encountered null node when one was expected");
+                    Services.PluginLog.Warning("Encountered null node when one was expected");
                     return null;
                 }
                 
                 if (componentNode->Type < (NodeType) 1000) {
-                    Service.PluginLog.Warning("Encountered regular node when component node was expected");
+                    Services.PluginLog.Warning("Encountered regular node when component node was expected");
                     return null;
                 }
 
                 return GetNodeInner(ref componentNode->Component->UldManager, remainingPath[1..]);
             
             default:
-                Service.PluginLog.Warning("Unable to parse remaining path.");
+                Services.PluginLog.Warning("Unable to parse remaining path.");
                 return null;
         }
     }

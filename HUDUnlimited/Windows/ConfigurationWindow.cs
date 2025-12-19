@@ -9,13 +9,13 @@ using Dalamud.Interface;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using HUDUnlimited.Classes;
-using KamiLib.Extensions;
-using KamiLib.Window;
+using HUDUnlimited.Extensions;
 
 namespace HUDUnlimited.Windows;
 
@@ -47,34 +47,31 @@ public unsafe class ConfigurationWindow : Window {
         .Where(entry => filter == string.Empty || entry.Value->NameString.Contains(filter, StringComparison.OrdinalIgnoreCase))
         .ToList();
 
-    public ConfigurationWindow() : base("HUDUnlimited Configuration Window", new Vector2(900.0f, 500.0f)) {
+    public ConfigurationWindow() : base("HUDUnlimited Configuration Window") {
+        SizeConstraints = new WindowSizeConstraints {
+            MinimumSize = new Vector2(900.0f, 500.0f),
+        };
+        
         TitleBarButtons.Add(new TitleBarButton {
-            Click = _ => System.OverrideListWindow.UnCollapseOrToggle(),
+            Click = _ => System.OverrideListWindow.IsOpen = !System.OverrideListWindow.IsOpen,
             Icon = FontAwesomeIcon.Cog,
             ShowTooltip = () => ImGui.SetTooltip("Open Preset Browser"),
             IconOffset = new Vector2(2.0f, 1.0f),
         });
-        
-        TitleBarButtons.Add(new TitleBarButton {
-            Click = _ => System.InfoWindow.UnCollapseOrToggle(),
-            Icon = FontAwesomeIcon.InfoCircle,
-            ShowTooltip = () => ImGui.SetTooltip("Open Plugin Help/Info"),
-            IconOffset = new Vector2(2.0f, 1.0f),
-        });
     }
 
-    protected override void DrawContents() {
+    public override void Draw() {
         using var table = ImRaii.Table("configuration_table", 3, ImGuiTableFlags.Resizable);
         if (!table) return;
         
         ImGui.TableSetupColumn("##addon_selection", ImGuiTableColumnFlags.WidthFixed, 200.0f * ImGuiHelpers.GlobalScale);
         ImGui.TableSetupColumn("##node_selection", ImGuiTableColumnFlags.WidthFixed, 100.0f * ImGuiHelpers.GlobalScale);
         ImGui.TableSetupColumn("##node_configuration", ImGuiTableColumnFlags.WidthStretch);
-
+        
         ImGui.TableNextColumn();
         DrawAddonNameFilter();
         DrawAddonSelectionChild();
-
+        
         ImGui.TableNextColumn();
         DrawNodeExtrasTable();
         DrawNodeSelectionChild();
@@ -110,7 +107,7 @@ public unsafe class ConfigurationWindow : Window {
         DrawNodeTypeSelection();
 
         ImGui.TableNextColumn();
-        using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+        using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
             if (ImGui.Button(locateNode ? FontAwesomeIcon.EyeSlash.ToIconString() : FontAwesomeIcon.Eye.ToIconString())) { 
                 locateNode = !locateNode;
             }
@@ -305,7 +302,7 @@ public unsafe class ConfigurationWindow : Window {
                 
         ImGui.SameLine();
         using (ImRaii.Disabled(option is null)) {
-            using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+            using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                 if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), ImGui.GetContentRegionAvail()) && option is not null) {
                     option.OverrideEnabled = false;
                     System.AddonController.DisableOverride(option);
@@ -348,7 +345,7 @@ public unsafe class ConfigurationWindow : Window {
             var uncompressed = Util.DecompressString(decodedString);
 
             if (uncompressed.IsNullOrEmpty()) {
-                Service.NotificationManager.AddNotification(new Notification {
+                Services.NotificationManager.AddNotification(new Notification {
                     Type = NotificationType.Error, Content = "Unable to Paste Configuration",
                 });
             }
@@ -369,7 +366,7 @@ public unsafe class ConfigurationWindow : Window {
                     pastedConfiguration.CopyTo(option);
                 }
 
-                Service.NotificationManager.AddNotification(new Notification {
+                Services.NotificationManager.AddNotification(new Notification {
                     Type = NotificationType.Info, Content = $"Pasted Configuration: {pastedConfiguration.NodePath}",
                 });
             
@@ -465,7 +462,7 @@ public unsafe class ConfigurationWindow : Window {
                 }
 
                 if (option is not null) {
-                    using (Service.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+                    using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                         var symbolSize = ImGui.CalcTextSize(FontAwesomeIcon.StarHalfAlt.ToIconString());
                         ImGui.SameLine(ImGui.GetContentRegionMax().X - symbolSize.X);
                         ImGui.Text(option.OverrideEnabled ? FontAwesomeIcon.Star.ToIconString() : FontAwesomeIcon.StarHalfAlt.ToIconString());
@@ -488,7 +485,7 @@ public unsafe class ConfigurationWindow : Window {
         }
     }
 
-    private void HighlightNode(AtkResNode* node) {
+    private static void HighlightNode(AtkResNode* node) {
         if (node is null) return;
 
         var viewportOffset = ImGui.GetMainViewport().Pos;

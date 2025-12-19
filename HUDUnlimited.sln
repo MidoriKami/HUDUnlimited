@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HUDUnlimited", "HUDUnlimited\HUDUnlimited.csproj", "{ED012F22-F994-4178-809F-7CDC44BFF840}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KamiLib", "KamiLib\KamiLib.csproj", "{D2F1BFCB-5C8E-41BD-A9C1-409B739029B6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KamiToolKit", "KamiToolKit\KamiToolKit.csproj", "{13008286-EA84-4024-A62B-F46841757167}"
 EndProject
 Global
@@ -23,10 +21,6 @@ Global
 		{9C6CF0F2-F1E5-4B08-80AB-FCC757BCC029}.Debug|x64.Build.0 = Debug|x64
 		{9C6CF0F2-F1E5-4B08-80AB-FCC757BCC029}.Release|x64.ActiveCfg = Release|x64
 		{9C6CF0F2-F1E5-4B08-80AB-FCC757BCC029}.Release|x64.Build.0 = Release|x64
-		{D2F1BFCB-5C8E-41BD-A9C1-409B739029B6}.Debug|x64.ActiveCfg = Debug|x64
-		{D2F1BFCB-5C8E-41BD-A9C1-409B739029B6}.Debug|x64.Build.0 = Debug|x64
-		{D2F1BFCB-5C8E-41BD-A9C1-409B739029B6}.Release|x64.ActiveCfg = Release|x64
-		{D2F1BFCB-5C8E-41BD-A9C1-409B739029B6}.Release|x64.Build.0 = Release|x64
 		{13008286-EA84-4024-A62B-F46841757167}.Debug|x64.ActiveCfg = Debug|x64
 		{13008286-EA84-4024-A62B-F46841757167}.Debug|x64.Build.0 = Debug|x64
 		{13008286-EA84-4024-A62B-F46841757167}.Release|x64.ActiveCfg = Release|x64
