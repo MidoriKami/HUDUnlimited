@@ -1,8 +1,19 @@
 ﻿<Project Sdk="Dalamud.NET.Sdk/14.0.1">
     <PropertyGroup>
         <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <PackageProjectUrl>https://github.com/MidoriKami/HUDUnlimited.git</PackageProjectUrl>
     </PropertyGroup>
+
+    <PropertyGroup>
+        <Author>MidoriKami</Author>
+        <Name>HUDUnlimited</Name>
+        <InternalName>HUDUnlimited</InternalName>
+        <Punchline>Total control of your User Interface</Punchline>
+        <Description>Allows you to modify any and all individual elements of the user interface to allow you to customize it however you wish</Description>
+        <RepoUrl>https://github.com/MidoriKami/HUDUnlimited</RepoUrl>
+        <Tags>ui;control;unlimited;hud;hotbar</Tags>
+        <AcceptsFeedback>false</AcceptsFeedback>
+    </PropertyGroup>
+    
     <ItemGroup>
       <ProjectReference Include="..\KamiToolKit\KamiToolKit.csproj" />
     </ItemGroup>
