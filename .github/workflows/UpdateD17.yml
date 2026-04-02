@@ -10,8 +10,8 @@ on:
       - master
 
 env:
-  INTERNAL_NAME: VanillaPlus
-  PLUGIN_NAME: VanillaPlus
+  INTERNAL_NAME: HUDUnlimited
+  PLUGIN_NAME: HUDUnlimited
 
 jobs:
   update-repo:
