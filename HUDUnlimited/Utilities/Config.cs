@@ -1,4 +1,4 @@
-﻿namespace ChillFrames.Utilities;
+﻿namespace HUDUnlimited.Utilities;
 
 /// <summary>
 /// Configuration File Utilities

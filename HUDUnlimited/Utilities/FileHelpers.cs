@@ -2,9 +2,8 @@
 using System.IO;
 using System.Text.Json;
 using Dalamud.Utility;
-using HUDUnlimited;
 
-namespace ChillFrames.Utilities;
+namespace HUDUnlimited.Utilities;
 
 public static class FileHelpers {
     private static readonly JsonSerializerOptions SerializerOptions = new() {
