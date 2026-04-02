@@ -154,10 +154,10 @@ public unsafe class AddonController : IDisposable {
         // Omit the addon name, we already matched it to this AtkUldManager
         var nodePath = path.Split("/")[1..];
 
-        return GetNodeInner(ref manager, nodePath);
+        return GetNodeInner(ref manager, nodePath, path);
     }
 
-    private static AtkResNode* GetNodeInner(ref AtkUldManager manager, string[] remainingPath) {
+    private static AtkResNode* GetNodeInner(ref AtkUldManager manager, string[] remainingPath, string originalPath) {
         switch (remainingPath.Length) {
             // We are at the last step in the path, get the node and return it
             case 1 when uint.TryParse(remainingPath[0], out var index):
@@ -168,16 +168,16 @@ public unsafe class AddonController : IDisposable {
                 var componentNode = (AtkComponentNode*) FindNode(ref manager, index);
 
                 if (componentNode is null) {
-                    Services.PluginLog.Warning("Encountered null node when one was expected");
+                    Services.PluginLog.Warning($"Encountered null node when one was expected. Path: {originalPath}");
                     return null;
                 }
                 
-                if (componentNode->Type < (NodeType) 1000) {
-                    Services.PluginLog.Warning("Encountered regular node when component node was expected");
+                if (componentNode->GetNodeType() is not NodeType.Component) {
+                    Services.PluginLog.Warning($"Encountered regular node when component node was expected. Path: {originalPath}");
                     return null;
                 }
 
-                return GetNodeInner(ref componentNode->Component->UldManager, remainingPath[1..]);
+                return GetNodeInner(ref componentNode->Component->UldManager, remainingPath[1..], originalPath);
             
             default:
                 Services.PluginLog.Warning("Unable to parse remaining path.");
