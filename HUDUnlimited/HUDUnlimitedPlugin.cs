@@ -2,6 +2,7 @@
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using HUDUnlimited.Classes;
+using HUDUnlimited.Extensions;
 using HUDUnlimited.Windows;
 
 namespace HUDUnlimited;
@@ -14,7 +15,7 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
 
         System.ConfigurationWindow = new ConfigurationWindow();
         System.OverrideListWindow = new OverrideListWindow();
-        
+
         System.AddonController = new AddonController();
         
         System.WindowSystem = new WindowSystem("HUDUnlimited");
@@ -34,6 +35,8 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
         Services.PluginInterface.UiBuilder.Draw += System.WindowSystem.Draw;
         Services.PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
         Services.PluginInterface.UiBuilder.OpenMainUi += OpenMainUi;
+
+        System.ConfigurationWindow.DebugOpen();
     }
     
     public void Dispose() {
@@ -55,11 +58,9 @@ public sealed class HUDUnlimitedPlugin : IDalamudPlugin {
         System.ConfigurationWindow.IsOpen = !System.ConfigurationWindow.IsOpen;
     }
     
-    private static void OpenConfigUi() {
-        System.ConfigurationWindow.IsOpen = !System.ConfigurationWindow.IsOpen;
-    }
+    private static void OpenConfigUi()
+        => System.ConfigurationWindow.IsOpen = !System.ConfigurationWindow.IsOpen;
 
-    private static void OpenMainUi() {
-        System.OverrideListWindow.IsOpen = !System.OverrideListWindow.IsOpen;
-    }
+    private static void OpenMainUi()
+        => System.OverrideListWindow.IsOpen = !System.OverrideListWindow.IsOpen;
 }

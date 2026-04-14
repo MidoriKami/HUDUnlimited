@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using KamiToolKit.Extensions;
 
 namespace HUDUnlimited.Classes;
 
@@ -8,8 +9,7 @@ public static class DrawHelpers {
         if (node is null) return currentScale;
         
         if (node->ParentNode is not null) {
-            currentScale.X *= node->ParentNode->GetScaleX();
-            currentScale.Y *= node->ParentNode->GetScaleY();
+            currentScale *= node->Scale;
 
             return GetNodeScale(node->ParentNode, currentScale);
         }

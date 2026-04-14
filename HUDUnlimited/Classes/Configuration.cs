@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using HUDUnlimited.Utilities;
 
 namespace HUDUnlimited.Classes;
