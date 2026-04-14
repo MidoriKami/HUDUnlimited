@@ -25,7 +25,7 @@ public unsafe class ConfigurationWindow : Window {
     private readonly ComponentSelect componentSelect;
     private readonly NodeConfiguration nodeConfiguration;
     
-    public ConfigurationWindow() : base("HUDUnlimited Configuration Window2") {
+    public ConfigurationWindow() : base("HUDUnlimited Configuration Window") {
         SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(600.0f, 400.0f),
         };
