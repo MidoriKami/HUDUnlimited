@@ -81,7 +81,6 @@ public unsafe class NodeConfiguration {
         }
     }
     
-        
     private void DrawNodeHeader() {
         ImGui.AlignTextToFramePadding();
         ImGuiHelpers.CenteredText(currentNode->GetNodeType().ToString());
