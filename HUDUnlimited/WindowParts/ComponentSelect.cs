@@ -113,7 +113,7 @@ public unsafe class ComponentSelect {
             ImGui.SameLine(40.0f * ImGuiHelpers.GlobalScale);
             ImGui.Text($"{node->NodeId}");
 
-            ImGui.SameLine(100.0f * ImGuiHelpers.GlobalScale);
+            ImGui.SameLine(125.0f * ImGuiHelpers.GlobalScale);
 
             var configData = System.Config.Overrides.FirstOrDefault(option => option.NodePath == $"{nodePath}/{node->NodeId}");
             if (configData is { CustomName: { Length: > 0 } customName }) {
