@@ -12,7 +12,9 @@ public static class AtkUnitBaseExtensions {
             var position = addon.Position;
             var size = addon.Size * addon.Scale;
             
-            ImGui.GetForegroundDrawList().AddRect(
+            var drawList = isFocused ? ImGui.GetForegroundDrawList() : ImGui.GetBackgroundDrawList();
+            
+            drawList.AddRect(
                 position, 
                 position + size , 
                 ImGui.GetColorU32(color), 
@@ -22,7 +24,7 @@ public static class AtkUnitBaseExtensions {
             );
 
             if (isFocused) {
-                ImGui.GetForegroundDrawList().AddRect(
+                drawList.AddRect(
                     position, 
                     position + size, 
                     ImGui.GetColorU32(focusColor), 

@@ -18,7 +18,9 @@ public static unsafe class AtkResNodeExtensions {
             var position = node.ScreenPosition;
             var size = node.Size * scale;
             
-            ImGui.GetForegroundDrawList().AddRect(
+            var drawList = isFocused ? ImGui.GetForegroundDrawList() : ImGui.GetBackgroundDrawList();
+            
+            drawList.AddRect(
                 position,
                 position + size,
                 ImGui.GetColorU32(color),
@@ -28,7 +30,7 @@ public static unsafe class AtkResNodeExtensions {
             );
 
             if (isFocused) {
-                ImGui.GetForegroundDrawList().AddRect(
+                drawList.AddRect(
                     position,
                     position + size,
                     ImGui.GetColorU32(focusColor),
