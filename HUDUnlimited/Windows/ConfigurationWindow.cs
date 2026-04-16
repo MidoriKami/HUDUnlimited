@@ -124,7 +124,7 @@ public unsafe class ConfigurationWindow : Window {
             componentSelect.Draw(currentNodeManager, currentNode, currentPath);
 
             if (currentNode is not null && currentNode->GetNodeType() is not NodeType.Component) {
-                currentNode->DrawBorder(KnownColor.White.Vector(), 2.0f);
+                currentNode->DrawBorder(KnownColor.White.Vector());
             }
         }
 

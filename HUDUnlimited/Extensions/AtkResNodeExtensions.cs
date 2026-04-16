@@ -39,7 +39,7 @@ public static unsafe class AtkResNodeExtensions {
             }
         }
 
-        public void DrawBorder(Vector4 color, float thickness) {
+        public void DrawBorder(Vector4 color) {
             var addon = RaptureAtkUnitManager.Instance()->GetAddonByNode(&node);
             if (addon is null) return;
 
