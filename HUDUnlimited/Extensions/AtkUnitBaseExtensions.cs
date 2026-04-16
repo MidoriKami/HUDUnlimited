@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using KamiToolKit.Extensions;
@@ -17,7 +18,7 @@ public static class AtkUnitBaseExtensions {
                 ImGui.GetColorU32(color), 
                 5.0f,
                 ImDrawFlags.RoundCornersAll, 
-                4.0f
+                System.Config.LineThickness
             );
 
             if (isFocused) {
@@ -27,7 +28,7 @@ public static class AtkUnitBaseExtensions {
                     ImGui.GetColorU32(focusColor), 
                     5.0f,
                     ImDrawFlags.RoundCornersAll, 
-                    2.0f
+                    Math.Max(System.Config.LineThickness - 1.0f, 1.0f)
                 );
             }
         }

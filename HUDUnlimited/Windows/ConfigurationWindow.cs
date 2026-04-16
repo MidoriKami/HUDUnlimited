@@ -127,6 +127,11 @@ public unsafe class ConfigurationWindow : Window {
                 currentNode->DrawBorder(KnownColor.White.Vector(), 2.0f);
             }
         }
+
+        ImGuiHelpers.ScaledDummy(2.0f);
+
+        ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
+        ImGui.DragFloat("##LineThickness", ref System.Config.LineThickness, 0.01f, 0.5f, 10.0f);
     }
 
     private void DrawConfig() {

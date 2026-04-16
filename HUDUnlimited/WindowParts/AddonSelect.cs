@@ -37,7 +37,7 @@ public unsafe class AddonSelect {
     }
 
     private void DrawAddonSelect() {
-        using var addonListBox = ImRaii.ListBox("##AddonSelect", ImGui.GetContentRegionAvail());
+        using var addonListBox = ImRaii.ListBox("##AddonSelect", ImGui.GetContentRegionAvail() - ImGuiHelpers.ScaledVector2(0.0f, 32.0f));
         if (!addonListBox) return;
 
         baseColor = new ColorHelpers.HsvaColor(0.0f, 1.0f, 1.0f, 1.0f);

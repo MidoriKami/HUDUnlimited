@@ -53,7 +53,7 @@ public unsafe class ComponentSelect {
     }
 
     private void DrawNodeSelect(AtkUldManager* currentNodeManager) {
-        using var addonListBox = ImRaii.ListBox("##ComponentSelect", ImGui.GetContentRegionAvail());
+        using var addonListBox = ImRaii.ListBox("##ComponentSelect", ImGui.GetContentRegionAvail() - ImGuiHelpers.ScaledVector2(0.0f, 32.0f));
         if (!addonListBox) return;
 
         var nodes = currentNodeManager->Nodes.ToArray()

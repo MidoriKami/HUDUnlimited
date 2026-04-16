@@ -9,6 +9,8 @@ public class Configuration {
     public bool HideInactiveNodes = false;
     public List<OverrideConfig> Overrides = [];
     
+    [JsonIgnore] public float LineThickness = 5.0f;
+
     public static Configuration Load()
         => Config.LoadConfig<Configuration>("System.config.json");
     
