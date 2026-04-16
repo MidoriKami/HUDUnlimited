@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using Dalamud.Utility.Numerics;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using KamiToolKit.Extensions;
 
 namespace HUDUnlimited.Classes;
 
@@ -74,40 +75,25 @@ public unsafe class AddonController : IDisposable {
             
             // Apply overrides for this node
             if (option.Flags.HasFlag(OverrideFlags.Position)) {
-                node->SetPositionFloat(option.Position.X, option.Position.Y);
+                node->Position = option.Position;
             }
             
             if (option.Flags.HasFlag(OverrideFlags.Scale)) {
-                node->SetScale(option.Scale.X, option.Scale.Y);
+                node->Scale = option.Scale;
             }
             
             if (option.Flags.HasFlag(OverrideFlags.Color)) {
-                node->Color = option.Color.ToByteColor();
+                node->ColorVector = option.Color;
             }
 
-            if (option.Flags.HasFlag(OverrideFlags.AddColor) && option.Flags.HasFlag(OverrideFlags.SubtractColor)) {
-                node->AddRed = (short)( option.AddColor.X * 255.0f - option.SubtractColor.X * 255.0f);
-                node->AddGreen = (short)( option.AddColor.Y * 255.0f - option.SubtractColor.Y * 255.0f );
-                node->AddBlue = (short)( option.AddColor.Z * 255.0f - option.SubtractColor.Z * 255.0f );
+            if (option.Flags.HasFlag(OverrideFlags.AddColor) || option.Flags.HasFlag(OverrideFlags.SubtractColor)) {
+                var addAmount = option.Flags.HasFlag(OverrideFlags.AddColor) ? option.AddColor : Vector3.Zero;
+                var subtractAmount = option.Flags.HasFlag(OverrideFlags.SubtractColor) ? option.SubtractColor : Vector3.Zero;
+                node->AddColor = addAmount - subtractAmount;
             }
-            else {
-                if (option.Flags.HasFlag(OverrideFlags.AddColor)) {
-                    node->AddRed = (short)( option.AddColor.X * 255.0f );
-                    node->AddGreen = (short)( option.AddColor.Y * 255.0f );
-                    node->AddBlue = (short)( option.AddColor.Z * 255.0f );
-                }
-            
-                if (option.Flags.HasFlag(OverrideFlags.SubtractColor)) {
-                    node->AddRed = (short)( -option.SubtractColor.X * 255.0f );
-                    node->AddGreen = (short)( -option.SubtractColor.Y * 255.0f );
-                    node->AddBlue = (short)( -option.SubtractColor.Z * 255.0f );
-                }
-            }
-            
+
             if (option.Flags.HasFlag(OverrideFlags.MultiplyColor)) {
-                node->MultiplyRed = (byte)( option.MultiplyColor.X * 255.0f );
-                node->MultiplyGreen = (byte)( option.MultiplyColor.Y * 255.0f );
-                node->MultiplyBlue = (byte)( option.MultiplyColor.Z * 255.0f );
+                node->MultiplyColor = option.MultiplyColor;
             }
             
             if (option.Flags.HasFlag(OverrideFlags.Visibility)) {
