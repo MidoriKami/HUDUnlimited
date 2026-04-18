@@ -20,6 +20,7 @@ public unsafe class ConfigurationWindow : Window {
     private string currentPath = string.Empty;
     private AtkUldManager* currentNodeManager;
     private AtkResNode* currentNode;
+    private AtkUnitBase* currentAddon;
 
     private readonly AddonSelect addonSelect;
     private readonly ComponentSelect componentSelect;
@@ -46,26 +47,6 @@ public unsafe class ConfigurationWindow : Window {
         };
 
         nodeConfiguration = new NodeConfiguration();
-    }
-
-    private void OnNodeSelected(Pointer<AtkResNode> node) {
-        if (node.Value is null) return;
-
-        if (node.Value->GetNodeType() is NodeType.Component) {
-            currentNodeManager = &node.Value->GetAsAtkComponentNode()->Component->UldManager;
-            currentPath += $"/{node.Value->NodeId}";
-        }
-        else {
-
-            // If we already had a normal node selected, replace the last part of the path.
-            if (currentNode is not null && currentNode->GetNodeType() is not NodeType.Component) {
-                currentPath = string.Join("/", currentPath.Split('/')[..^1]);
-            }
-
-            currentPath += $"/{node.Value->NodeId}";
-        }
-
-        currentNode = node.Value;
     }
 
     public override void Draw() {
@@ -105,8 +86,7 @@ public unsafe class ConfigurationWindow : Window {
         }
         else {
             if (ImGui.Button("Clear Path", ImGuiHelpers.ScaledVector2(100.0f, ImGui.GetFrameHeight()))) {
-                currentPath = string.Empty;
-                currentNodeManager = null;
+                ResetCurrentState();
                 return;
             }
 
@@ -121,10 +101,12 @@ public unsafe class ConfigurationWindow : Window {
             addonSelect.Draw();
         }
         else {
-            componentSelect.Draw(currentNodeManager, currentNode, currentPath);
+            if (currentAddon is not null) {
+                componentSelect.Draw(currentAddon, currentNodeManager, currentNode, currentPath);
 
-            if (currentNode is not null && currentNode->GetNodeType() is not NodeType.Component) {
-                currentNode->DrawBorder(KnownColor.White.Vector());
+                if (currentNode is not null && currentNode->GetNodeType() is not NodeType.Component) {
+                    currentNode->DrawBorder(KnownColor.White.Vector(), currentAddon->Scale);
+                }
             }
         }
 
@@ -142,13 +124,34 @@ public unsafe class ConfigurationWindow : Window {
         nodeConfiguration.Draw(currentNode, currentPath);
     }
 
-    
     private void OnAddonSelected(Pointer<AtkUnitBase> pointer) {
         if (pointer.Value is null) return;
-        
+
+        currentAddon = pointer;
         currentPath = pointer.Value->NameString;
         currentNodeManager = &pointer.Value->UldManager;
         currentNode = null;
+    }
+
+    private void OnNodeSelected(Pointer<AtkResNode> node) {
+        if (node.Value is null) return;
+
+        if (node.Value->GetNodeType() is NodeType.Component) {
+            currentNodeManager = &node.Value->GetAsAtkComponentNode()->Component->UldManager;
+            currentPath += $"/{node.Value->NodeId}";
+        }
+        else {
+
+            // If we already had a normal node selected, replace the last part of the path.
+            if (currentNode is not null && currentNode->GetNodeType() is not NodeType.Component) {
+                currentPath = string.Join("/", currentPath.Split('/')[..^1]);
+            }
+
+            currentPath += $"/{node.Value->NodeId}";
+        }
+
+        currentNode = node.Value;
+        componentSelect.ResetFilter();
     }
 
     private void DrawPath(string path) {
@@ -192,13 +195,15 @@ public unsafe class ConfigurationWindow : Window {
             
             var addon = RaptureAtkUnitManager.Instance()->GetAddonByName(addonName);
             if (addon is null) {
-                currentPath = string.Empty;
-                currentNodeManager = null;
+                ResetCurrentState();
                 return;
             }
 
             currentNodeManager = &addon->UldManager;
             currentPath = pathSoFar;
+            currentAddon = addon;
+            
+            componentSelect.ResetFilter();
             return;
         }
         
@@ -207,9 +212,7 @@ public unsafe class ConfigurationWindow : Window {
         
         // If node is null, we errored. Reset.
         if (node is null) {
-            currentNode = null;
-            currentNodeManager = null;
-            currentPath = string.Empty;
+            ResetCurrentState();
             return;
         }
         
@@ -237,25 +240,41 @@ public unsafe class ConfigurationWindow : Window {
                 parentNode = parentNode->ParentNode;
             }
 
+            // Get the parent Addon for this node.
+            var addon = RaptureAtkUnitManager.Instance()->GetAddonByNode(node);
+            if (addon is null) {
+                ResetCurrentState();
+                return;
+            }
+
+            currentAddon = addon;
+            
             // We don't have a component node parent, must be an addon instead.
             if (parentNode is null) {
-                var addon = RaptureAtkUnitManager.Instance()->GetAddonByNode(node);
-                if (addon is null) return; // Something is broken if we are here.
-
                 currentNodeManager = &addon->UldManager;
-                currentNode = node;
-                currentPath = pathSoFar;
             }
-            
+
             // We found our parent component node
             else {
                 var componentNode = parentNode->GetAsAtkComponentNode();
                 if (componentNode is null) return; // Or not? Wtf?
-                
+
                 currentNodeManager = &componentNode->Component->UldManager;
-                currentNode = node;
-                currentPath = pathSoFar;
             }
+
+            currentNode = node;
+            currentPath = pathSoFar;
         }
+        
+        componentSelect.ResetFilter();
+    }
+
+    private void ResetCurrentState() {
+        currentNode = null;
+        currentNodeManager = null;
+        currentPath = string.Empty;
+        currentAddon = null;
+
+        componentSelect.ResetFilter();
     }
 }

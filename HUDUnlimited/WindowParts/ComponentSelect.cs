@@ -21,12 +21,14 @@ public unsafe class ComponentSelect {
     private ColorHelpers.HsvaColor baseColor = new(0.0f, 1.0f, 1.0f, 1.0f);
 
     private ExtendedNodeType typeFilter;
-    private bool showColorOutlines;
     private AtkResNode* selectedNode;
+    private AtkUnitBase* selectedAddon;
     private string nodePath = string.Empty;
     
-    public void Draw(AtkUldManager* currentNodeManager, AtkResNode* node, string currentPath) {
-        showColorOutlines = node is null || node->GetNodeType() is NodeType.Component;
+    public void Draw(AtkUnitBase* currentAddon, AtkUldManager* currentNodeManager, AtkResNode* node, string currentPath) {
+        if (currentAddon is null) return;
+        
+        selectedAddon = currentAddon;
         selectedNode = node;
         nodePath = currentPath;
         
@@ -56,6 +58,8 @@ public unsafe class ComponentSelect {
         using var addonListBox = ImRaii.ListBox("##ComponentSelect", ImGui.GetContentRegionAvail() - ImGuiHelpers.ScaledVector2(0.0f, 32.0f));
         if (!addonListBox) return;
 
+        if (selectedNode is not null && selectedNode->GetNodeType() is not NodeType.Component) return;
+        
         var nodes = currentNodeManager->Nodes.ToArray()
             .Where(node => node.Value is not null)
             .Where(IsNodePermitted)
@@ -89,7 +93,7 @@ public unsafe class ComponentSelect {
         using var id = ImRaii.PushId(node->NodeId.ToString());
         
         var cursorPosition = ImGui.GetCursorPos();
-        if (ImGui.Selectable($"##{pointer.GetHashCode()}", pointer.Value == selectedNode, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
+        if (ImGui.Selectable($"##{pointer.GetHashCode()}", false, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
             OnNodeSelected.Invoke(pointer);
             typeFilter = ExtendedNodeType.None;
         }
@@ -100,7 +104,7 @@ public unsafe class ComponentSelect {
 
         var nodeColor = ColorHelpers.HsvToRgb(baseColor);
 
-        if (node->IsActuallyVisible && showColorOutlines) {
+        if (node->IsActuallyVisible) {
             using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push())
             using (ImRaii.PushColor(ImGuiCol.Text, nodeColor)) {
                 ImGui.Text(FontAwesomeIcon.SquareFull.ToIconString());
@@ -130,11 +134,15 @@ public unsafe class ComponentSelect {
             }
         }
         
-        if (node->IsActuallyVisible && showColorOutlines) {
+        if (node->IsActuallyVisible) {
             var outlineColor = isHovered ? KnownColor.White.Vector() : nodeColor;
             baseColor.H += 0.07f;
 
-            node->DrawOutline(outlineColor, KnownColor.Black.Vector(), isHovered);
+            node->DrawOutline(outlineColor, KnownColor.Black.Vector(), selectedAddon->Scale, isHovered);
         }
+    }
+
+    public void ResetFilter() {
+        typeFilter = ExtendedNodeType.None;
     }
 }

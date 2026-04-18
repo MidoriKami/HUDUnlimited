@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using HUDUnlimited.Classes;
 using KamiToolKit.Extensions;
@@ -10,11 +9,8 @@ namespace HUDUnlimited.Extensions;
 
 public static unsafe class AtkResNodeExtensions {
     extension(AtkResNode node) {
-        public void DrawOutline(Vector4 color, Vector4 focusColor, bool isFocused) {
-            var addon = RaptureAtkUnitManager.Instance()->GetAddonByNode(&node);
-            if (addon is null) return;
-            
-            var scale = DrawHelpers.GetNodeScale(&node, node.Scale) * addon->Scale;
+        public void DrawOutline(Vector4 color, Vector4 focusColor, float addonScale, bool isFocused) {
+            var scale = DrawHelpers.GetNodeScale(&node, node.Scale) * addonScale;
             var position = node.ScreenPosition;
             var size = node.Size * scale;
             
@@ -41,11 +37,8 @@ public static unsafe class AtkResNodeExtensions {
             }
         }
 
-        public void DrawBorder(Vector4 color) {
-            var addon = RaptureAtkUnitManager.Instance()->GetAddonByNode(&node);
-            if (addon is null) return;
-
-            var scale = DrawHelpers.GetNodeScale(&node, node.Scale) * addon->Scale;
+        public void DrawBorder(Vector4 color, float addonScale) {
+            var scale = DrawHelpers.GetNodeScale(&node, node.Scale) * addonScale;
             var position = node.ScreenPosition;
             var size = node.Size * scale;
             
