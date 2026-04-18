@@ -11,6 +11,7 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using HUDUnlimited.Extensions;
+using KamiToolKit.Extensions;
 
 namespace HUDUnlimited.WindowParts;
 
@@ -58,7 +59,7 @@ public unsafe class AddonSelect {
 
         var addonColor = ColorHelpers.HsvToRgb(baseColor);
 
-        if (addon->IsVisible) {
+        if (addon->IsActuallyVisible) {
             using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push())
             using (ImRaii.PushColor(ImGuiCol.Text, addonColor)) {
                 ImGui.Text(FontAwesomeIcon.SquareFull.ToIconString());
@@ -68,13 +69,13 @@ public unsafe class AddonSelect {
             ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 5.0f * ImGuiHelpers.GlobalScale);
         }
 
-        var addonNameColor = !addon->IsVisible ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
+        var addonNameColor = !addon->IsActuallyVisible ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
         
         using (ImRaii.PushColor(ImGuiCol.Text, addonNameColor)) {
             ImGui.Text(addon->NameString);
         }
 
-        if (addon->IsVisible) {
+        if (addon->IsActuallyVisible) {
             var outlineColor = isHovered ? KnownColor.White.Vector() : addonColor;
             baseColor.H += 0.07f;
 
@@ -84,9 +85,8 @@ public unsafe class AddonSelect {
 
     private List<Pointer<AtkUnitBase>> Addons => RaptureAtkUnitManager.Instance()->AllLoadedUnitsList.Entries.ToArray()
         .Where(entry => entry.Value is not null && entry.Value->IsReady)
-        // .Where(entry => !(!entry.Value->IsVisible && System.Config.HideInactiveAddons))
         .Where(entry => filter == string.Empty || entry.Value->NameString.Contains(filter, StringComparison.OrdinalIgnoreCase))
-        .OrderByDescending(entry => entry.Value->IsVisible)
+        .OrderByDescending(entry => entry.Value->IsActuallyVisible)
         .ThenBy(entry => entry.Value->NameString)
         .ToList();
 }
