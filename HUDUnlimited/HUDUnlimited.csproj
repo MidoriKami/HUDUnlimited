@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Dalamud.NET.Sdk/15.0.0">
     <PropertyGroup>
-        <AssemblyVersion>1.2.2.0</AssemblyVersion>
+        <AssemblyVersion>1.2.2.1</AssemblyVersion>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -12,7 +12,7 @@
         <Tags>ui;control;unlimited;hud;hotbar</Tags>
         <AcceptsFeedback>false</AcceptsFeedback>
     </PropertyGroup>
-    
+
     <ItemGroup>
       <ProjectReference Include="..\KamiToolKit\KamiToolKit.csproj" />
     </ItemGroup>
