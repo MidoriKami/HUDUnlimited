@@ -17,21 +17,22 @@ namespace HUDUnlimited.WindowParts;
 public unsafe class ComponentSelect {
 
     public required Action<Pointer<AtkResNode>> OnNodeSelected { get; init; }
-    
+
     private ColorHelpers.HsvaColor baseColor = new(0.0f, 1.0f, 1.0f, 1.0f);
 
     private ExtendedNodeType typeFilter;
     private AtkResNode* selectedNode;
     private AtkUnitBase* selectedAddon;
     private string nodePath = string.Empty;
-    
+
     public void Draw(AtkUnitBase* currentAddon, AtkUldManager* currentNodeManager, AtkResNode* node, string currentPath) {
         if (currentAddon is null) return;
-        
+        if (currentNodeManager is null) return;
+
         selectedAddon = currentAddon;
         selectedNode = node;
         nodePath = currentPath;
-        
+
         DrawNodeTypeFilter();
         DrawNodeSelect(currentNodeManager);
     }
@@ -41,7 +42,7 @@ public unsafe class ComponentSelect {
 
         using var filterChild = ImRaii.Child("filter_child", new Vector2(ImGui.GetContentRegionAvail().X, filterChildHeight));
         if (!filterChild.Success) return;
-                
+
         ImGui.PushItemWidth(ImGui.GetContentRegionAvail().X);
 
         using var typeCombo = ImRaii.Combo("##nodeTypeFilter", typeFilter is 0 ? "None" : typeFilter.ToString(), ImGuiComboFlags.HeightLarge);
@@ -55,25 +56,28 @@ public unsafe class ComponentSelect {
     }
 
     private void DrawNodeSelect(AtkUldManager* currentNodeManager) {
+        if (currentNodeManager is null) return;
+
         using var addonListBox = ImRaii.ListBox("##ComponentSelect", ImGui.GetContentRegionAvail() - ImGuiHelpers.ScaledVector2(0.0f, 32.0f));
         if (!addonListBox) return;
 
         if (selectedNode is not null && selectedNode->GetNodeType() is not NodeType.Component) return;
-        
+
         var nodes = currentNodeManager->Nodes.ToArray()
             .Where(node => node.Value is not null)
             .Where(IsNodePermitted)
             .ToList();
-        
+
         baseColor = new ColorHelpers.HsvaColor(0.0f, 1.0f, 1.0f, 1.0f);
         ImGuiClip.ClippedDraw(nodes, DrawNodeManager, ImGui.GetTextLineHeight());
     }
 
     private bool IsNodePermitted(Pointer<AtkResNode> pointer) {
+        if (pointer.Value is null) return false;
         if (typeFilter is ExtendedNodeType.None) return true;
-        
+
         var nodeType = pointer.Value->GetNodeType();
-        
+
         return typeFilter switch {
             ExtendedNodeType.None => true,
             ExtendedNodeType.Res when nodeType is NodeType.Res => true,
@@ -89,9 +93,11 @@ public unsafe class ComponentSelect {
     }
 
     private void DrawNodeManager(Pointer<AtkResNode> pointer) {
+        if (pointer.Value is null) return;
+
         var node = pointer.Value;
         using var id = ImRaii.PushId(node->NodeId.ToString());
-        
+
         var cursorPosition = ImGui.GetCursorPos();
         if (ImGui.Selectable($"##{pointer.GetHashCode()}", false, ImGuiSelectableFlags.None, new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetTextLineHeight()))) {
             OnNodeSelected.Invoke(pointer);
@@ -122,18 +128,18 @@ public unsafe class ComponentSelect {
             var configData = System.Config.Overrides.FirstOrDefault(option => option.NodePath == $"{nodePath}/{node->NodeId}");
             if (configData is { CustomName: { Length: > 0 } customName }) {
                 ImGui.Text(customName);
-                
+
                 using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                     var symbolSize = ImGui.CalcTextSize(FontAwesomeIcon.StarHalfAlt.ToIconString());
                     ImGui.SameLine(ImGui.GetContentRegionMax().X - symbolSize.X);
                     ImGui.Text(configData.OverrideEnabled ? FontAwesomeIcon.Star.ToIconString() : FontAwesomeIcon.StarHalfAlt.ToIconString());
                 }
             }
-            else {  
+            else {
                 ImGui.Text($"{node->GetNodeType()}");
             }
         }
-        
+
         if (node->IsActuallyVisible) {
             var outlineColor = isHovered ? KnownColor.White.Vector() : nodeColor;
             baseColor.H += 0.07f;
