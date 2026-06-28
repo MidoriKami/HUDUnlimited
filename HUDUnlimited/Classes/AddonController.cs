@@ -4,7 +4,6 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using KamiToolKit.Extensions;
 
@@ -12,7 +11,7 @@ namespace HUDUnlimited.Classes;
 
 public unsafe class AddonController : IDisposable {
     private readonly HashSet<string> trackedAddons = [];
-    
+
     public AddonController() {
         foreach (var nodeOverride in System.Config.Overrides) {
             EnableOverride(nodeOverride);
@@ -49,7 +48,7 @@ public unsafe class AddonController : IDisposable {
             Services.PluginLog.Debug($"Unregistering Listener: {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
         }
     }
-    
+
     private void ApplyOverrides(AddonEvent type, AddonArgs args) {
         var options = System.Config.Overrides
             .Where(option => option.AttachAddonName == args.AddonName)
@@ -58,30 +57,23 @@ public unsafe class AddonController : IDisposable {
         foreach (var option in options) {
             // If this option is for an Embedded Addon, and we are being called from the proxyParent. We need to fetch the correct addon.
             var targetAddon = (AtkUnitBase*)args.Addon.Address;
-            
+
             // Check that the addon we want to modify is completely ready yet.
             if (!targetAddon->IsReady) continue;
-            
-            if (option.ProxyParentName is not null) {
-                var proxyAddon = RaptureAtkUnitManager.Instance()->GetAddonByName(option.AddonName);
-                if (proxyAddon is not null) {
-                    targetAddon = proxyAddon;
-                }
-            }
-            
+
             // Get node to modify for this option
             var node = NodeFinder.GetNode(&targetAddon->UldManager, option.NodePath);
             if (node is null) continue;
-            
+
             // Apply overrides for this node
             if (option.Flags.HasFlag(OverrideFlags.Position)) {
                 node->Position = option.Position;
             }
-            
+
             if (option.Flags.HasFlag(OverrideFlags.Scale)) {
                 node->Scale = option.Scale;
             }
-            
+
             if (option.Flags.HasFlag(OverrideFlags.Color)) {
                 node->ColorVector = option.Color;
             }
@@ -95,14 +87,14 @@ public unsafe class AddonController : IDisposable {
             if (option.Flags.HasFlag(OverrideFlags.MultiplyColor)) {
                 node->MultiplyColor = option.MultiplyColor;
             }
-            
+
             if (option.Flags.HasFlag(OverrideFlags.Visibility)) {
                 node->ToggleVisibility(option.Visible);
             }
 
             if ((option.IsTextNode ?? false) && node->GetNodeType() is NodeType.Text) {
                 var textNode = (AtkTextNode*) node;
-                
+
                 if (option.Flags.HasFlag(OverrideFlags.TextColor)) {
                     textNode->TextColor = option.TextColor.ToByteColor();
                 }

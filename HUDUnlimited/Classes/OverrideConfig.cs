@@ -14,15 +14,14 @@ public class OverrideConfig {
     public required string NodePath { get; set; }
 
     public string NodeName => $"{NodePath}{(CustomName != string.Empty ? $" ( {CustomName} )" : string.Empty)}##{NodePath}";
-    public string? ProxyParentName { get; set; }
 
     public string CustomName = string.Empty;
-    
+
     [JsonIgnore] public string AddonName => NodePath.Split("/")[0];
-    [JsonIgnore] public string AttachAddonName => ProxyParentName ?? AddonName;
+    [JsonIgnore] public string AttachAddonName => AddonName;
 
     public bool OverrideEnabled;
-    
+
     public Vector2 Position = Vector2.Zero;
     public Vector2 Scale = Vector2.One;
     public Vector4 Color = Vector4.One;
@@ -30,7 +29,7 @@ public class OverrideConfig {
     public Vector3 SubtractColor = Vector3.Zero;
     public Vector3 MultiplyColor = Vector3.One;
     public bool Visible = true;
-    
+
     public OverrideFlags Flags;
 
     public bool? IsTextNode = false;
@@ -41,7 +40,7 @@ public class OverrideConfig {
     public FontType FontType = FontType.Axis;
     public AlignmentType AlignmentType = AlignmentType.Left;
     public TextFlags TextFlags;
-    
+
     public void DrawConfig() {
         using var disabled = ImRaii.Disabled(!OverrideEnabled);
 
@@ -89,7 +88,7 @@ public class OverrideConfig {
 
     private bool DrawTextNodeConfig() {
         var configChanged = false;
-        
+
         configChanged |= DrawColor4Option("Text Color", ref TextColor, OverrideFlags.TextColor);
         configChanged |= DrawColor4Option("Text Outline Color", ref TextOutlineColor, OverrideFlags.TextOutlineColor);
         configChanged |= DrawColor4Option("Text Background Color", ref TextBackgroundColor, OverrideFlags.TextBackgroundColor);
@@ -104,7 +103,7 @@ public class OverrideConfig {
     private bool DrawBoolOption(string label, ref bool value, OverrideFlags flags) {
         var configChanged = false;
         configChanged |= DrawOptionHeader(label, this, flags);
-        
+
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
@@ -116,7 +115,7 @@ public class OverrideConfig {
     private bool DrawColor3Option(string label, ref Vector3 color, OverrideFlags flags) {
         var configChanged = false;
         configChanged |= DrawOptionHeader(label, this, flags);
-        
+
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!Flags.HasFlag(flags))) {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
@@ -146,7 +145,7 @@ public class OverrideConfig {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             configChanged |= ImGui.DragFloat2($"##{label}", ref option, speed);
         }
-        
+
         return configChanged;
     }
 
@@ -159,7 +158,7 @@ public class OverrideConfig {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             configChanged |= ImGui.InputInt($"##{label}", ref option);
         }
-        
+
         return configChanged;
     }
 
@@ -172,10 +171,10 @@ public class OverrideConfig {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             configChanged |= ImGuiCombos.EnumCombo($"##{label}", ref option);
         }
-        
+
         return configChanged;
     }
-    
+
     private bool DrawFlagEnumOption(string label, ref TextFlags option, OverrideFlags flags) {
         var configChanged = false;
         configChanged |= DrawOptionHeader(label, this, flags);
@@ -185,13 +184,13 @@ public class OverrideConfig {
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             configChanged |= ImGuiCombos.EnumFlagCombo($"##{label}", ref option);
         }
-        
+
         return configChanged;
     }
 
     private bool DrawCustomNameField() {
         var configChanged = false;
-        
+
         ImGui.TableNextColumn();
         ImGui.Text("Custom Name");
 
@@ -204,23 +203,23 @@ public class OverrideConfig {
     }
 
     private static bool DrawOptionHeader(string label, OverrideConfig? option, OverrideFlags flag) {
-        ImGui.TableNextRow(); 
+        ImGui.TableNextRow();
         ImGui.TableNextColumn();
         ImGuiHelpers.ScaledDummy(5.0f);
-        
-        ImGui.TableNextRow(); 
+
+        ImGui.TableNextRow();
         ImGui.TableNextColumn();
         ImGui.TableNextColumn();
         ImGui.Text(label);
-        
-        ImGui.TableNextRow(); 
+
+        ImGui.TableNextRow();
         ImGui.TableNextColumn();
         return DrawFlagOption(option, flag);
     }
-    
+
     private static bool DrawFlagOption(OverrideConfig? option, OverrideFlags flag) {
         var positionFlag = option?.Flags.HasFlag(flag) ?? false;
-        
+
         ImGui.SetCursorPosX(5.0f);
         if (ImGui.Checkbox($"##FlagOption{flag.ToString()}", ref positionFlag)) {
             if (option is not null) {
@@ -240,8 +239,7 @@ public class OverrideConfig {
 
     public void CopyTo(OverrideConfig? other) {
         if (other is null) return;
-        
-        other.ProxyParentName = ProxyParentName;
+
         other.CustomName = CustomName;
         other.OverrideEnabled = OverrideEnabled;
         other.Position = Position;
