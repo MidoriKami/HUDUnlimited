@@ -31,7 +31,7 @@ public unsafe class AddonController : IDisposable {
             trackedAddons.Add(overrideConfig.AttachAddonName);
         }
         else {
-            Services.PluginLog.Debug($"Listener already active for {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
+            Services.PluginLog.Verbose($"Listener already active for {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
         }
     }
 
