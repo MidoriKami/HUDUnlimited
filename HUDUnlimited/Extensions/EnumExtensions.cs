@@ -6,7 +6,7 @@ namespace HUDUnlimited.Extensions;
 public static class EnumExtensions {
     extension(Enum value) {
         public string Description => value.GetDescription();
-        
+
         private string GetDescription() {
             var type = value.GetType();
             if (Enum.GetName(type, value) is { } name) {
@@ -16,7 +16,7 @@ public static class EnumExtensions {
                     }
                 }
             }
-        
+
             return value.ToString();
         }
     }

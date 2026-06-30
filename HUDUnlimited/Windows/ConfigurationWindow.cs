@@ -25,12 +25,12 @@ public unsafe class ConfigurationWindow : Window {
     private readonly AddonSelect addonSelect;
     private readonly ComponentSelect componentSelect;
     private readonly NodeConfiguration nodeConfiguration;
-    
+
     public ConfigurationWindow() : base("HUDUnlimited Configuration Window") {
         SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2(600.0f, 400.0f),
         };
-        
+
         TitleBarButtons.Add(new TitleBarButton {
             Click = _ => System.OverrideListWindow.IsOpen = !System.OverrideListWindow.IsOpen,
             Icon = FontAwesomeIcon.Cog,
@@ -57,7 +57,7 @@ public unsafe class ConfigurationWindow : Window {
                 DrawHeader();
             }
         }
-        
+
         ImGui.Separator();
 
         using (var bodyChild = ImRaii.Child("BodyChild", ImGui.GetContentRegionAvail(), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)) {
@@ -91,7 +91,7 @@ public unsafe class ConfigurationWindow : Window {
             }
 
             ImGui.SameLine(125.0f * ImGuiHelpers.GlobalScale);
-            
+
             DrawPath(currentPath);
         }
     }
@@ -120,7 +120,7 @@ public unsafe class ConfigurationWindow : Window {
 
         using var configChild = ImRaii.Child("Config", ImGui.GetContentRegionAvail());
         if (!configChild.Success) return;
-        
+
         nodeConfiguration.Draw(currentNode, currentPath);
     }
 
@@ -157,13 +157,13 @@ public unsafe class ConfigurationWindow : Window {
     private void DrawPath(string path) {
         var segments = path.Split('/');
         var pathSoFar = string.Empty;
-        
+
         foreach (var (index, pathSegment) in segments.Index()) {
             using var id = ImRaii.PushId(pathSoFar);
-            
+
             if (pathSoFar != string.Empty) {
                 pathSoFar += "/";
-                
+
                 ImGui.SameLine();
             }
 
@@ -177,7 +177,7 @@ public unsafe class ConfigurationWindow : Window {
 
             if (index < segments.Length - 1) {
                 ImGui.SameLine();
-                
+
                 ImGui.AlignTextToFramePadding();
                 ImGui.Text("/");
             }
@@ -190,9 +190,9 @@ public unsafe class ConfigurationWindow : Window {
     /// <param name="pathSoFar">Path to reset to.</param>
     private void ResetToPath(string pathSoFar) {
         // If we selected an addon, not a node
-        if (pathSoFar.Split('/') is [ var addonName ]) {
+        if (pathSoFar.Split('/') is [var addonName]) {
             currentNode = null;
-            
+
             var addon = RaptureAtkUnitManager.Instance()->GetAddonByName(addonName);
             if (addon is null) {
                 ResetCurrentState();
@@ -202,33 +202,33 @@ public unsafe class ConfigurationWindow : Window {
             currentNodeManager = &addon->UldManager;
             currentPath = pathSoFar;
             currentAddon = addon;
-            
+
             componentSelect.ResetFilter();
             return;
         }
-        
+
         // Get Node
         var node = NodeFinder.GetNode(pathSoFar);
-        
+
         // If node is null, we errored. Reset.
         if (node is null) {
             ResetCurrentState();
             return;
         }
-        
+
         // If node is Component, load atkuldmanager
         if (node->GetNodeType() is NodeType.Component) {
             var componentNode = node->GetAsAtkComponentNode();
             if (componentNode is null) return; // Shouldn't happen.
-            
+
             currentNodeManager = &componentNode->Component->UldManager;
             currentNode = node;
             currentPath = pathSoFar;
         }
-        
+
         // If node is normal node, find its parent
         else if (node->GetNodeType() is not NodeType.Component) {
-            
+
             // Loop to find Parent ComponentNode
             var parentNode = node->ParentNode;
 
@@ -236,7 +236,7 @@ public unsafe class ConfigurationWindow : Window {
                 if (parentNode->GetNodeType() is NodeType.Component) {
                     break; // We found it.
                 }
-                
+
                 parentNode = parentNode->ParentNode;
             }
 
@@ -248,7 +248,7 @@ public unsafe class ConfigurationWindow : Window {
             }
 
             currentAddon = addon;
-            
+
             // We don't have a component node parent, must be an addon instead.
             if (parentNode is null) {
                 currentNodeManager = &addon->UldManager;
@@ -265,7 +265,7 @@ public unsafe class ConfigurationWindow : Window {
             currentNode = node;
             currentPath = pathSoFar;
         }
-        
+
         componentSelect.ResetFilter();
     }
 

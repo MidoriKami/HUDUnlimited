@@ -29,10 +29,10 @@ public class OverrideListWindow : Window {
     public override void Draw() {
         using var table = ImRaii.Table("option_viewer", 2, ImGuiTableFlags.Resizable);
         if (!table) return;
-        
+
         ImGui.TableSetupColumn("##addon_selection", ImGuiTableColumnFlags.WidthFixed, 200.0f * ImGuiHelpers.GlobalScale);
         ImGui.TableSetupColumn("##option_config", ImGuiTableColumnFlags.WidthStretch);
-            
+
         ImGui.TableNextColumn();
         DrawAddonSelection();
         DrawImportButton();
@@ -40,14 +40,14 @@ public class OverrideListWindow : Window {
         ImGui.TableNextColumn();
         DrawAddonConfig();
     }
-    
+
     private void DrawAddonSelection() {
-        using var selectionChild = ImRaii.Child("selection_child",  new Vector2(ImGui.GetContentRegionAvail().X - ImGui.GetStyle().FramePadding.X, ImGui.GetContentRegionAvail().Y - ImGui.GetStyle().FramePadding.Y - 28.0f * ImGuiHelpers.GlobalScale));
+        using var selectionChild = ImRaii.Child("selection_child", new Vector2(ImGui.GetContentRegionAvail().X - ImGui.GetStyle().FramePadding.X, ImGui.GetContentRegionAvail().Y - ImGui.GetStyle().FramePadding.Y - 28.0f * ImGuiHelpers.GlobalScale));
         if (!selectionChild) return;
-        
+
         using var listBox = ImRaii.ListBox("##addon_listBox", ImGui.GetContentRegionAvail());
         if (!listBox) return;
-        
+
         foreach (var addon in System.Config.Overrides.GroupBy(option => option.AddonName)) {
             if (ImGui.Selectable(addon.Key, selectedAddon == addon.Key)) {
                 selectedAddon = addon.Key;
@@ -55,11 +55,11 @@ public class OverrideListWindow : Window {
             }
         }
     }
-    
+
     private static void DrawImportButton() {
         using var importChild = ImRaii.Child("import_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding);
         if (!importChild) return;
-        
+
         using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
             if (ImGui.Button(FontAwesomeIcon.FileImport.ToIconString(), ImGui.GetContentRegionAvail())) {
                 try {
@@ -67,7 +67,7 @@ public class OverrideListWindow : Window {
                 }
                 catch (Exception e) {
                     Services.NotificationManager.AddNotification(new Notification {
-                        Type = NotificationType.Error, 
+                        Type = NotificationType.Error,
                         Content = "Error reading data from clipboard, try copying preset again.",
                         Minimized = false,
                     });
@@ -75,12 +75,12 @@ public class OverrideListWindow : Window {
                 }
             }
         }
-                        
+
         if (ImGui.IsItemHovered()) {
             ImGui.SetTooltip("Import Configs from Clipboard");
         }
     }
-    
+
     private static void ImportPresets() {
         var decodedString = Convert.FromBase64String(ImGui.GetClipboardText());
         var uncompressed = Util.DecompressString(decodedString);
@@ -104,16 +104,16 @@ public class OverrideListWindow : Window {
             Services.NotificationManager.AddNotification(new Notification {
                 Type = NotificationType.Info, Content = $"Imported {addedCount} new presets",
             });
-            
+
             System.Config.Save();
         }
     }
 
     private void DrawAddonConfig() {
-        using var configChild = ImRaii.Child("config_child", ImGui.GetContentRegionAvail()  - ImGui.GetStyle().FramePadding);
+        using var configChild = ImRaii.Child("config_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding);
         if (!configChild) return;
         if (selectedAddon == string.Empty) return;
-        
+
         ImGuiHelpers.ScaledDummy(10.0f);
         ImGuiHelpers.CenteredText(selectedAddon);
         ImGui.Separator();
@@ -121,20 +121,20 @@ public class OverrideListWindow : Window {
 
         using var tabBar = ImRaii.TabBar("browser_tab_bar");
         if (!tabBar) return;
-        
+
         using (var overview = ImRaii.TabItem("Overview")) {
             if (overview) {
                 DrawAddonOverview();
             }
         }
-                                    
+
         using (var configuration = ImRaii.TabItem("Configuration")) {
             if (configuration) {
                 DrawConfigOverview();
             }
         }
     }
-    
+
     private void DrawAddonOverview() {
         if (selectedAddon == string.Empty) return;
         using var child = ImRaii.Child("addon_overview");
@@ -146,14 +146,14 @@ public class OverrideListWindow : Window {
             DrawOptionButtons();
         }
     }
-        
+
     private void DrawOptionSelection() {
         using var selectionChild = ImRaii.Child("selection_child", new Vector2(ImGui.GetContentRegionAvail().X, ImGui.GetContentRegionAvail().Y - 25.0f * ImGuiHelpers.GlobalScale) - ImGui.GetStyle().FramePadding);
         if (!selectionChild) return;
-        
+
         using var selectionList = ImRaii.ListBox("##option_multi_select", ImGui.GetContentRegionAvail());
         if (!selectionList) return;
-        
+
         foreach (var option in System.Config.Overrides.Where(configOption => configOption.AddonName == selectedAddon)) {
             if (ImGui.Selectable(option.NodeName, selectedConfigs.Contains(option))) {
                 if (!selectedConfigs.Remove(option)) {
@@ -162,19 +162,19 @@ public class OverrideListWindow : Window {
             }
         }
     }
-    
+
     private void DrawOptionButtons() {
         using var optionsChild = ImRaii.Child("options_child", ImGui.GetContentRegionAvail(), false, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse);
         if (!optionsChild) return;
-            
+
         using var table = ImRaii.Table("buttons_table", 4, ImGuiTableFlags.SizingStretchProp);
         if (!table) return;
-            
+
         ImGui.TableSetupColumn("##SelectAll", ImGuiTableColumnFlags.WidthStretch, 3);
         ImGui.TableSetupColumn("##DeselectAll", ImGuiTableColumnFlags.WidthStretch, 3);
         ImGui.TableSetupColumn("##Export", ImGuiTableColumnFlags.WidthStretch, 1);
         ImGui.TableSetupColumn("##Delete", ImGuiTableColumnFlags.WidthStretch, 1);
-                    
+
         ImGui.TableNextColumn();
         if (ImGui.Button("Select All", ImGui.GetContentRegionAvail())) {
             selectedConfigs.Clear();
@@ -182,20 +182,20 @@ public class OverrideListWindow : Window {
                 selectedConfigs.Add(option);
             }
         }
-                
+
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(selectedConfigs.Count == 0)) {
             if (ImGui.Button("Deselect All", ImGui.GetContentRegionAvail())) {
                 selectedConfigs.Clear();
             }
         }
-                
+
         ImGui.TableNextColumn();
         DrawExportButton();
         if (ImGui.IsItemHovered()) {
             ImGui.SetTooltip("Export Configs to Clipboard");
         }
-        
+
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!(ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift) || selectedConfigs.Count == 0)) {
             using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
@@ -244,15 +244,15 @@ public class OverrideListWindow : Window {
 
             ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
             DrawOptionCombo(group);
-            
+
             ImGuiHelpers.ScaledDummy(10.0f);
             if (selectionConfigOption is null) continue;
-            
+
             using var configChild = ImRaii.Child("config_child");
             if (configChild.Success) {
                 selectionConfigOption.DrawConfig();
             }
-                    
+
             ImGui.SetCursorPosY(ImGui.GetContentRegionMax().Y - 28.0f * ImGuiHelpers.GlobalScale);
             using (var deleteChild = ImRaii.Child("delete_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding)) {
                 if (deleteChild) {
@@ -270,7 +270,7 @@ public class OverrideListWindow : Window {
                     }
                 }
             }
-                    
+
             if (removeConfig is not null) {
                 System.Config.Overrides.Remove(removeConfig);
                 selectionConfigOption = null;
@@ -285,7 +285,7 @@ public class OverrideListWindow : Window {
     private void DrawOptionCombo(IGrouping<string, OverrideConfig> group) {
         using var combo = ImRaii.Combo("option_select_combo", selectionConfigOption?.NodeName ?? "None Selected");
         if (!combo) return;
-        
+
         foreach (var config in group) {
             if (ImGui.Selectable(config.NodeName, selectionConfigOption == config)) {
                 selectionConfigOption = config;

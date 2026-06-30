@@ -32,7 +32,7 @@ public unsafe class AddonSelect {
 
         using var filterChild = ImRaii.Child("filter_child", new Vector2(ImGui.GetContentRegionAvail().X, filterChildHeight));
         if (!filterChild.Success) return;
-        
+
         ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
         ImGui.InputTextWithHint("##filter", "Filter . . .", ref filter, 64, ImGuiInputTextFlags.AutoSelectAll);
     }
@@ -44,7 +44,7 @@ public unsafe class AddonSelect {
         baseColor = new ColorHelpers.HsvaColor(0.0f, 1.0f, 1.0f, 1.0f);
         ImGuiClip.ClippedDraw(Addons, DrawAddon, ImGui.GetTextLineHeight());
     }
-    
+
     private void DrawAddon(Pointer<AtkUnitBase> pointer) {
         var addon = pointer.Value;
 
@@ -70,7 +70,7 @@ public unsafe class AddonSelect {
         }
 
         var addonNameColor = !addon->IsActuallyVisible ? KnownColor.Gray.Vector() with { W = 0.66f } : KnownColor.LightGreen.Vector();
-        
+
         using (ImRaii.PushColor(ImGuiCol.Text, addonNameColor)) {
             ImGui.Text(addon->NameString);
         }

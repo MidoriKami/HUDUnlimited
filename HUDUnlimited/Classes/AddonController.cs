@@ -93,7 +93,7 @@ public unsafe class AddonController : IDisposable {
             }
 
             if ((option.IsTextNode ?? false) && node->GetNodeType() is NodeType.Text) {
-                var textNode = (AtkTextNode*) node;
+                var textNode = (AtkTextNode*)node;
 
                 if (option.Flags.HasFlag(OverrideFlags.TextColor)) {
                     textNode->TextColor = option.TextColor.ToByteColor();
@@ -108,7 +108,7 @@ public unsafe class AddonController : IDisposable {
                 }
 
                 if (option.Flags.HasFlag(OverrideFlags.FontSize)) {
-                    textNode->FontSize = (byte) option.FontSize;
+                    textNode->FontSize = (byte)option.FontSize;
                 }
 
                 if (option.Flags.HasFlag(OverrideFlags.FontType)) {

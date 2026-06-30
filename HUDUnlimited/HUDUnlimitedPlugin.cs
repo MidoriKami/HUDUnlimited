@@ -41,7 +41,9 @@ public sealed class HUDUnlimitedPlugin : IAsyncDalamudPlugin {
         Services.PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
         Services.PluginInterface.UiBuilder.OpenMainUi += OpenMainUi;
 
-        System.ConfigurationWindow.DebugOpen();
+        if (System.Config.DebugMode) {
+            System.ConfigurationWindow.IsOpen = true;
+        }
 
         return Task.CompletedTask;
     }
@@ -62,9 +64,24 @@ public sealed class HUDUnlimitedPlugin : IAsyncDalamudPlugin {
     }
 
     private static void OnCommand(string command, string arguments) {
-        if (command is not ( "/hudunlimited" or "/hudu" )) return;
+        if (command is not ("/hudunlimited" or "/hudu")) return;
 
-        System.ConfigurationWindow.IsOpen = !System.ConfigurationWindow.IsOpen;
+        switch (arguments.Split('/')) {
+            case [""] or [] or null:
+                System.ConfigurationWindow.IsOpen = !System.ConfigurationWindow.IsOpen;
+                break;
+
+            case ["debug"]:
+                System.Config.DebugMode = !System.Config.DebugMode;
+                Services.ChatGui.Print($"Debug mode is now {(System.Config.DebugMode ? "Enabled" : "Disabled")}", "VanillaPlus");
+                Services.PluginLog.Info($"Debug mode is now {(System.Config.DebugMode ? "Enabled" : "Disabled")}");
+                Task.Run(System.Config.Save);
+
+                if (!System.ConfigurationWindow.IsOpen) {
+                    System.ConfigurationWindow.IsOpen = true;
+                }
+                break;
+        }
     }
 
     private static void OpenConfigUi()

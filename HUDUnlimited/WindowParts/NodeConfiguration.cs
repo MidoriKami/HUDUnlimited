@@ -55,7 +55,7 @@ public unsafe class NodeConfiguration {
 
                     option.IsTextNode = isTextNode;
                     if (isTextNode) {
-                        var textNode = (AtkTextNode*) node;
+                        var textNode = (AtkTextNode*)node;
                         option.TextColor = textNode->TextColor.ToVector4();
                         option.TextOutlineColor = textNode->EdgeColor.ToVector4();
                         option.TextBackgroundColor = textNode->BackgroundColor.ToVector4();
@@ -119,7 +119,7 @@ public unsafe class NodeConfiguration {
                 };
 
                 if (currentNode is not null && currentNode->GetNodeType() is NodeType.Text) {
-                    var textNode = (AtkTextNode*) currentNode;
+                    var textNode = (AtkTextNode*)currentNode;
 
                     newOption.IsTextNode = true;
                     newOption.TextColor = textNode->TextColor.ToVector4();

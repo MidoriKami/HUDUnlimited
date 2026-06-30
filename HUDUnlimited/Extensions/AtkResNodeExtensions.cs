@@ -13,9 +13,9 @@ public static unsafe class AtkResNodeExtensions {
             var scale = DrawHelpers.GetNodeScale(&node, node.Scale) * addonScale;
             var position = node.ScreenPosition;
             var size = node.Size * scale;
-            
+
             var drawList = isFocused ? ImGui.GetForegroundDrawList() : ImGui.GetBackgroundDrawList();
-            
+
             drawList.AddRect(
                 position,
                 position + size,
@@ -41,7 +41,7 @@ public static unsafe class AtkResNodeExtensions {
             var scale = DrawHelpers.GetNodeScale(&node, node.Scale) * addonScale;
             var position = node.ScreenPosition;
             var size = node.Size * scale;
-            
+
             ImGui.GetForegroundDrawList().AddRect(
                 position,
                 position + size,

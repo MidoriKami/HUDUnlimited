@@ -23,20 +23,20 @@ public static class FileHelpers {
                     dataObject = new T();
                     SaveFile(dataObject, filePath);
                 }
-            
+
                 return dataObject;
             }
             catch (Exception e) {
                 // If there is any kind of error loading the file, generate a new one instead and save it.
                 Services.PluginLog.Error(e, $"Error trying to load file {filePath}, creating a new one instead.");
-            
+
                 SaveFile(new T(), filePath);
             }
         }
 
         var newFile = new T();
         SaveFile(newFile, filePath);
-    
+
         return newFile;
     }
 
@@ -46,7 +46,7 @@ public static class FileHelpers {
                 Services.PluginLog.Error("Null file provided.");
                 return;
             }
-            
+
             var fileText = JsonSerializer.Serialize(file, file.GetType(), SerializerOptions);
             FilesystemUtil.WriteAllTextSafe(filePath, fileText);
         }

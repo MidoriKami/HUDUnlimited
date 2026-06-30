@@ -274,6 +274,6 @@ public enum OverrideFlags {
     TextBackgroundColor = 1 << 9,
     FontSize = 1 << 10,
     FontType = 1 << 11,
-    AlignmentType  = 1 << 12,
+    AlignmentType = 1 << 12,
     TextFlags = 1 << 13,
 }

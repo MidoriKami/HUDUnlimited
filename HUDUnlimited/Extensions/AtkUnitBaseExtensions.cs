@@ -11,25 +11,25 @@ public static class AtkUnitBaseExtensions {
         public void DrawOutline(Vector4 color, Vector4 focusColor, bool isFocused) {
             var position = addon.Position;
             var size = addon.Size * addon.Scale;
-            
+
             var drawList = isFocused ? ImGui.GetForegroundDrawList() : ImGui.GetBackgroundDrawList();
-            
+
             drawList.AddRect(
-                position, 
-                position + size , 
-                ImGui.GetColorU32(color), 
+                position,
+                position + size,
+                ImGui.GetColorU32(color),
                 5.0f,
-                ImDrawFlags.RoundCornersAll, 
+                ImDrawFlags.RoundCornersAll,
                 System.Config.LineThickness
             );
 
             if (isFocused) {
                 drawList.AddRect(
-                    position, 
-                    position + size, 
-                    ImGui.GetColorU32(focusColor), 
+                    position,
+                    position + size,
+                    ImGui.GetColorU32(focusColor),
                     5.0f,
-                    ImDrawFlags.RoundCornersAll, 
+                    ImDrawFlags.RoundCornersAll,
                     Math.Max(System.Config.LineThickness - 1.0f, 1.0f)
                 );
             }

@@ -35,7 +35,7 @@ public static unsafe class NodeFinder {
 
             // Else we need to keep stepping in
             case > 1 when uint.TryParse(remainingPath[0], out var index):
-                var componentNode = (AtkComponentNode*) FindNode(manager, index);
+                var componentNode = (AtkComponentNode*)FindNode(manager, index);
 
                 if (componentNode is null) {
                     if (WarnedPaths.Add(originalPath)) {

@@ -31,14 +31,14 @@ public static class ImGuiCombos {
 
         return false;
     }
-    
+
     public static bool EnumCombo<T>(string label, ref T refValue) where T : Enum {
         using var combo = ImRaii.Combo(label, refValue.Description);
         if (!combo) return false;
 
         foreach (Enum enumValue in Enum.GetValues(refValue.GetType())) {
             if (!ImGui.Selectable(enumValue.Description, enumValue.Equals(refValue))) continue;
-            
+
             refValue = (T)enumValue;
             return true;
         }

@@ -8,12 +8,13 @@ public class Configuration {
     public bool HideInactiveAddons = false;
     public bool HideInactiveNodes = false;
     public List<OverrideConfig> Overrides = [];
-    
+    public bool DebugMode = false;
+
     [JsonIgnore] public float LineThickness = 5.0f;
 
     public static Configuration Load()
         => Config.LoadConfig<Configuration>("System.config.json");
-    
-    public void Save() 
+
+    public void Save()
         => Config.SaveConfig(this, "System.config.json");
 }
