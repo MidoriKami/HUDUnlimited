@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using KamiToolKit.Extensions;
 
@@ -19,19 +20,19 @@ public unsafe class AddonController : IDisposable {
     }
 
     public void Dispose() {
-        Services.AddonLifecycle.UnregisterListener(ApplyOverrides);
+        IAddonLifecycle.Get().UnregisterListener(ApplyOverrides);
     }
 
     public void EnableOverride(OverrideConfig overrideConfig) {
         if (!trackedAddons.Any(addon => addon == overrideConfig.AttachAddonName)) {
-            Services.AddonLifecycle.RegisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
-            Services.AddonLifecycle.RegisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
-            Services.AddonLifecycle.RegisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
-            Services.PluginLog.Debug($"Registering Listener: {overrideConfig.AttachAddonName}");
+            IAddonLifecycle.Get().RegisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
+            IAddonLifecycle.Get().RegisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
+            IAddonLifecycle.Get().RegisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
+            IPluginLog.Get().Debug($"Registering Listener: {overrideConfig.AttachAddonName}");
             trackedAddons.Add(overrideConfig.AttachAddonName);
         }
         else {
-            Services.PluginLog.Verbose($"Listener already active for {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
+            IPluginLog.Get().Verbose($"Listener already active for {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
         }
     }
 
@@ -41,11 +42,11 @@ public unsafe class AddonController : IDisposable {
             .Any(option => option.OverrideEnabled);
 
         if (!anyStillActive) {
-            Services.AddonLifecycle.UnregisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
-            Services.AddonLifecycle.UnregisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
-            Services.AddonLifecycle.UnregisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
+            IAddonLifecycle.Get().UnregisterListener(AddonEvent.PreDraw, overrideConfig.AttachAddonName, ApplyOverrides);
+            IAddonLifecycle.Get().UnregisterListener(AddonEvent.PostRefresh, overrideConfig.AttachAddonName, ApplyOverrides);
+            IAddonLifecycle.Get().UnregisterListener(AddonEvent.PostRequestedUpdate, overrideConfig.AttachAddonName, ApplyOverrides);
             trackedAddons.Remove(overrideConfig.AttachAddonName);
-            Services.PluginLog.Debug($"Unregistering Listener: {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
+            IPluginLog.Get().Debug($"Unregistering Listener: {overrideConfig.NodePath}:{overrideConfig.AttachAddonName}");
         }
     }
 

@@ -57,7 +57,7 @@ public class OverrideConfig {
         ImGui.TableNextColumn();
 
         using (ImRaii.PushStyle(ImGuiStyleVar.Alpha, 1.0f)) {
-            using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+            using (HUDUnlimitedPlugin.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
 
                 ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 3.0f * ImGuiHelpers.GlobalScale);
                 ImGui.Text(FontAwesomeIcon.InfoCircle.ToIconString());

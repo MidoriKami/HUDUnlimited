@@ -9,6 +9,7 @@ using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
+using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using HUDUnlimited.Classes;
 
@@ -60,18 +61,18 @@ public class OverrideListWindow : Window {
         using var importChild = ImRaii.Child("import_child", ImGui.GetContentRegionAvail() - ImGui.GetStyle().FramePadding);
         if (!importChild) return;
 
-        using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+        using (HUDUnlimitedPlugin.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
             if (ImGui.Button(FontAwesomeIcon.FileImport.ToIconString(), ImGui.GetContentRegionAvail())) {
                 try {
                     ImportPresets();
                 }
                 catch (Exception e) {
-                    Services.NotificationManager.AddNotification(new Notification {
+                    INotificationManager.Get().AddNotification(new Notification {
                         Type = NotificationType.Error,
                         Content = "Error reading data from clipboard, try copying preset again.",
                         Minimized = false,
                     });
-                    Services.PluginLog.Error(e, "Error parsing preset from clipboard");
+                    IPluginLog.Get().Error(e, "Error parsing preset from clipboard");
                 }
             }
         }
@@ -86,7 +87,7 @@ public class OverrideListWindow : Window {
         var uncompressed = Util.DecompressString(decodedString);
 
         if (uncompressed.IsNullOrEmpty()) {
-            Services.NotificationManager.AddNotification(new Notification {
+            INotificationManager.Get().AddNotification(new Notification {
                 Type = NotificationType.Error, Content = "Unable to Import Presets",
             });
         }
@@ -101,7 +102,7 @@ public class OverrideListWindow : Window {
                 }
             }
 
-            Services.NotificationManager.AddNotification(new Notification {
+            INotificationManager.Get().AddNotification(new Notification {
                 Type = NotificationType.Info, Content = $"Imported {addedCount} new presets",
             });
 
@@ -198,7 +199,7 @@ public class OverrideListWindow : Window {
 
         ImGui.TableNextColumn();
         using (ImRaii.Disabled(!(ImGui.GetIO().KeyCtrl && ImGui.GetIO().KeyShift) || selectedConfigs.Count == 0)) {
-            using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+            using (HUDUnlimitedPlugin.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                 if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), ImGui.GetContentRegionAvail())) {
                     System.Config.Overrides.RemoveAll(option => selectedConfigs.Contains(option));
                     System.Config.Save();
@@ -220,14 +221,14 @@ public class OverrideListWindow : Window {
 
     private void DrawExportButton() {
         using var disabled = ImRaii.Disabled(selectedConfigs.Count == 0);
-        using var font = Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push();
+        using var font = HUDUnlimitedPlugin.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push();
 
         if (ImGui.Button(FontAwesomeIcon.FileExport.ToIconString(), ImGui.GetContentRegionAvail())) {
             var jsonString = JsonSerializer.Serialize(selectedConfigs, JsonSettings.SerializerOptions);
             var compressed = Util.CompressString(jsonString);
             ImGui.SetClipboardText(Convert.ToBase64String(compressed));
 
-            Services.NotificationManager.AddNotification(new Notification {
+            INotificationManager.Get().AddNotification(new Notification {
                 Type = NotificationType.Info, Content = $"Exported {selectedConfigs.Count} presets to clipboard.",
             });
         }
@@ -258,7 +259,7 @@ public class OverrideListWindow : Window {
                 if (deleteChild) {
                     using var disabled = ImRaii.Disabled(!(ImGui.GetIO().KeyShift && ImGui.GetIO().KeyCtrl));
 
-                    using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+                    using (HUDUnlimitedPlugin.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                         if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), ImGui.GetContentRegionAvail())) {
                             removeConfig = selectionConfigOption;
                         }

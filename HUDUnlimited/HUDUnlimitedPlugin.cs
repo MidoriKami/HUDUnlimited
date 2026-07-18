@@ -4,18 +4,16 @@ using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using HUDUnlimited.Classes;
-using HUDUnlimited.Extensions;
 using HUDUnlimited.Windows;
 
 namespace HUDUnlimited;
 
 public sealed class HUDUnlimitedPlugin : IAsyncDalamudPlugin {
-    [PluginService] private static IDalamudPluginInterface PluginInterface { get; set; } = null!;
+    [PluginService] internal static IDalamudPluginInterface PluginInterface { get; set; } = null!;
 
     public Task LoadAsync(CancellationToken cancellationToken) {
-        PluginInterface.Create<Services>();
-
         System.Config = Configuration.Load();
 
         System.ConfigurationWindow = new ConfigurationWindow();
@@ -27,19 +25,19 @@ public sealed class HUDUnlimitedPlugin : IAsyncDalamudPlugin {
         System.WindowSystem.AddWindow(System.ConfigurationWindow);
         System.WindowSystem.AddWindow(System.OverrideListWindow);
 
-        Services.CommandManager.AddHandler("/hudunlimited", new CommandInfo(OnCommand) {
+        ICommandManager.Get().AddHandler("/hudunlimited", new CommandInfo(OnCommand) {
             HelpMessage = "Open HUDUnlimited Config Window",
             ShowInHelp = true,
         });
 
-        Services.CommandManager.AddHandler("/hudu", new CommandInfo(OnCommand) {
+        ICommandManager.Get().AddHandler("/hudu", new CommandInfo(OnCommand) {
             HelpMessage = "Open HUDUnlimited Config Window",
             ShowInHelp = true,
         });
 
-        Services.PluginInterface.UiBuilder.Draw += System.WindowSystem.Draw;
-        Services.PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
-        Services.PluginInterface.UiBuilder.OpenMainUi += OpenMainUi;
+        PluginInterface.UiBuilder.Draw += System.WindowSystem.Draw;
+        PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
+        PluginInterface.UiBuilder.OpenMainUi += OpenMainUi;
 
         if (System.Config.DebugMode) {
             System.ConfigurationWindow.IsOpen = true;
@@ -49,14 +47,14 @@ public sealed class HUDUnlimitedPlugin : IAsyncDalamudPlugin {
     }
 
     public ValueTask DisposeAsync() {
-        Services.PluginInterface.UiBuilder.OpenConfigUi -= System.WindowSystem.Draw;
-        Services.PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUi;
-        Services.PluginInterface.UiBuilder.OpenMainUi -= OpenMainUi;
+        PluginInterface.UiBuilder.OpenConfigUi -= System.WindowSystem.Draw;
+        PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUi;
+        PluginInterface.UiBuilder.OpenMainUi -= OpenMainUi;
 
         System.WindowSystem.RemoveAllWindows();
 
-        Services.CommandManager.RemoveHandler("/hudunlimited");
-        Services.CommandManager.RemoveHandler("/hudu");
+        ICommandManager.Get().RemoveHandler("/hudunlimited");
+        ICommandManager.Get().RemoveHandler("/hudu");
 
         System.AddonController.Dispose();
 
@@ -73,8 +71,8 @@ public sealed class HUDUnlimitedPlugin : IAsyncDalamudPlugin {
 
             case ["debug"]:
                 System.Config.DebugMode = !System.Config.DebugMode;
-                Services.ChatGui.Print($"Debug mode is now {(System.Config.DebugMode ? "Enabled" : "Disabled")}", "VanillaPlus");
-                Services.PluginLog.Info($"Debug mode is now {(System.Config.DebugMode ? "Enabled" : "Disabled")}");
+                IChatGui.Get().Print($"Debug mode is now {(System.Config.DebugMode ? "Enabled" : "Disabled")}", "VanillaPlus");
+                IPluginLog.Get().Info($"Debug mode is now {(System.Config.DebugMode ? "Enabled" : "Disabled")}");
                 Task.Run(System.Config.Save);
 
                 if (!System.ConfigurationWindow.IsOpen) {

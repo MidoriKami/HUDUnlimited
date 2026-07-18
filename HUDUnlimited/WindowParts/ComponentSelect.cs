@@ -111,7 +111,7 @@ public unsafe class ComponentSelect {
         var nodeColor = ColorHelpers.HsvToRgb(baseColor);
 
         if (node->IsActuallyVisible) {
-            using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push())
+            using (HUDUnlimitedPlugin.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push())
             using (ImRaii.PushColor(ImGuiCol.Text, nodeColor)) {
                 ImGui.Text(FontAwesomeIcon.SquareFull.ToIconString());
             }
@@ -129,7 +129,7 @@ public unsafe class ComponentSelect {
             if (configData is { CustomName: { Length: > 0 } customName }) {
                 ImGui.Text(customName);
 
-                using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+                using (HUDUnlimitedPlugin.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                     var symbolSize = ImGui.CalcTextSize(FontAwesomeIcon.StarHalfAlt.ToIconString());
                     ImGui.SameLine(ImGui.GetContentRegionMax().X - symbolSize.X);
                     ImGui.Text(configData.OverrideEnabled ? FontAwesomeIcon.Star.ToIconString() : FontAwesomeIcon.StarHalfAlt.ToIconString());

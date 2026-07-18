@@ -8,6 +8,7 @@ using Dalamud.Interface;
 using Dalamud.Interface.ImGuiNotification;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
+using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using HUDUnlimited.Classes;
@@ -149,7 +150,7 @@ public unsafe class NodeConfiguration {
 
         ImGui.SameLine();
         using (ImRaii.Disabled(option is null)) {
-            using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
+            using (HUDUnlimitedPlugin.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push()) {
                 if (ImGui.Button(FontAwesomeIcon.Trash.ToIconString(), ImGui.GetContentRegionAvail()) && option is not null) {
                     option.OverrideEnabled = false;
                     System.AddonController.DisableOverride(option);
@@ -181,7 +182,7 @@ public unsafe class NodeConfiguration {
             var uncompressed = Util.DecompressString(decodedString);
 
             if (uncompressed.IsNullOrEmpty()) {
-                Services.NotificationManager.AddNotification(new Notification {
+                INotificationManager.Get().AddNotification(new Notification {
                     Type = NotificationType.Error,
                     Content = "Unable to Paste Configuration",
                 });
@@ -203,7 +204,7 @@ public unsafe class NodeConfiguration {
                     pastedConfiguration.CopyTo(option);
                 }
 
-                Services.NotificationManager.AddNotification(new Notification {
+                INotificationManager.Get().AddNotification(new Notification {
                     Type = NotificationType.Info,
                     Content = $"Pasted Configuration: {pastedConfiguration.NodePath}",
                 });

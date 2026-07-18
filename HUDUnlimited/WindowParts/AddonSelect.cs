@@ -60,7 +60,7 @@ public unsafe class AddonSelect {
         var addonColor = ColorHelpers.HsvToRgb(baseColor);
 
         if (addon->IsActuallyVisible) {
-            using (Services.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push())
+            using (HUDUnlimitedPlugin.PluginInterface.UiBuilder.IconFontFixedWidthHandle.Push())
             using (ImRaii.PushColor(ImGuiCol.Text, addonColor)) {
                 ImGui.Text(FontAwesomeIcon.SquareFull.ToIconString());
             }

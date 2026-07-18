@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
@@ -39,7 +40,7 @@ public static unsafe class NodeFinder {
 
                 if (componentNode is null) {
                     if (WarnedPaths.Add(originalPath)) {
-                        Services.PluginLog.Warning($"Encountered null node when one was expected. Path: {originalPath}");
+                        IPluginLog.Get().Warning($"Encountered null node when one was expected. Path: {originalPath}");
                     }
 
                     return null;
@@ -47,7 +48,7 @@ public static unsafe class NodeFinder {
 
                 if (componentNode->GetNodeType() is not NodeType.Component) {
                     if (WarnedPaths.Add(originalPath)) {
-                        Services.PluginLog.Warning($"Encountered regular node when component node was expected. Path: {originalPath}");
+                        IPluginLog.Get().Warning($"Encountered regular node when component node was expected. Path: {originalPath}");
                     }
 
                     return null;

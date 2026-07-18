@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json;
+using Dalamud.Plugin.Services;
 using Dalamud.Utility;
 
 namespace HUDUnlimited.Utilities;
@@ -28,7 +29,7 @@ public static class FileHelpers {
             }
             catch (Exception e) {
                 // If there is any kind of error loading the file, generate a new one instead and save it.
-                Services.PluginLog.Error(e, $"Error trying to load file {filePath}, creating a new one instead.");
+                IPluginLog.Get().Error(e, $"Error trying to load file {filePath}, creating a new one instead.");
 
                 SaveFile(new T(), filePath);
             }
@@ -43,7 +44,7 @@ public static class FileHelpers {
     public static void SaveFile<T>(T? file, string filePath) {
         try {
             if (file is null) {
-                Services.PluginLog.Error("Null file provided.");
+                IPluginLog.Get().Error("Null file provided.");
                 return;
             }
 
@@ -51,12 +52,12 @@ public static class FileHelpers {
             FilesystemUtil.WriteAllTextSafe(filePath, fileText);
         }
         catch (Exception e) {
-            Services.PluginLog.Error(e, $"Error trying to save file {filePath}");
+            IPluginLog.Get().Error(e, $"Error trying to save file {filePath}");
         }
     }
 
     public static FileInfo GetFileInfo(params string[] path) {
-        var directory = Services.PluginInterface.ConfigDirectory;
+        var directory = HUDUnlimitedPlugin.PluginInterface.ConfigDirectory;
 
         for (var index = 0; index < path.Length - 1; index++) {
             directory = new DirectoryInfo(Path.Combine(directory.FullName, path[index]));
