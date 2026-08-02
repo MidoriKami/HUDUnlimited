@@ -277,4 +277,10 @@ public unsafe class ConfigurationWindow : Window {
 
         componentSelect.ResetFilter();
     }
+
+    public override void OnClose() {
+        base.OnClose();
+
+        ResetCurrentState();
+    }
 }
